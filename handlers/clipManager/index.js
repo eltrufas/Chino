@@ -194,7 +194,7 @@ const handleAddMultiple = requirePermission(MANAGE_CLIPS)(function(bot, messageI
   const { tokens, channelID } = messageInfo;
 
   if (tokens.length < 1) {
-    return;
+    return Promise.resolve('noop');
   }
 
   const serverID = bot.serverFromChannelID(channelID);
