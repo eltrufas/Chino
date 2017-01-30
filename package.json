@@ -1,0 +1,20 @@
+{
+  "name": "shino-butt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.1.4",
+    "bluebird": "^3.4.7",
+    "discord.io": "github:eltrufas/discord.io",
+    "express": "^4.14.1",
+    "node-opus": "^0.2.4",
+    "redis": "^2.6.3",
+    "request": "^2.79.0"
+  }
+}

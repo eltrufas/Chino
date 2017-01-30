@@ -1,0 +1,4 @@
+module.exports = {
+  PERM_EDIT_GLOBAL: 'PERM_EDIT_GLOBAL',
+  PERM_EDIT_SERVER: 'PERM_EDIT_SERVER'
+};

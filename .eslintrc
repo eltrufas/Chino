@@ -1,0 +1,21 @@
+
+
+{
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "extends": "eslint:recommended",
+  "env": {
+    //enable nodejs environment
+    "node": true,
+    "es6": true
+  },
+  "rules": {
+    "no-console": 0,
+    "curly": ["warn", "all"],
+    "brace-style": [2, "1tbs"],
+    "semi": ["warn", "always"],
+    "prefer-const": ["error"]
+  }
+}
