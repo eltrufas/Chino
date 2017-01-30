@@ -38,7 +38,7 @@ const addClip = function(clipID, serverID, name) {
 const addMultipleClips = function(bot, clipIDs, serverID) {
   const redis = bot.redis || redis.createClient();
 
-  const clipPromise = redis.hmgetAsync.apply(redis, ['shinobu_sound_clips'].concat(clipIDs))
+  const clipPromise = redis.hmgetAsync.apply(redis, ['shinobu_sound_clips'].concat(clipIDs));
     
   const savePromise = clipPromise.then(res => {
       const clipStrings = res.filter(x => x);
@@ -53,7 +53,7 @@ const addMultipleClips = function(bot, clipIDs, serverID) {
     });
 
   return Promise.all([clipPromise, savePromise]).then(([clips]) => clips);
-}
+};
 
 
 const removeClip = function(name, serverID) {
@@ -67,7 +67,7 @@ const removeClip = function(name, serverID) {
         return Promise.reject('Clip not in server');
       }
     });
-}
+};
 
 
 const createClipObject = function(name, url, submitter) {
@@ -213,7 +213,7 @@ const handleRemove = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) 
   const { tokens, channelID } = messageInfo;
   const serverID = bot.serverFromChannelID(channelID);
 
-  const [ name ] = tokens
+  const [ name ] = tokens;
 
   if (!name) {
     return Promise.resolve('noop');
