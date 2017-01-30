@@ -35,6 +35,20 @@ const addClip = function(clipID, serverID, name) {
 };
 
 
+const removeClip = function(name, serverID) {
+  const redis = this.redis || redis.createClient();
+
+  return redis.hgetAsync(`shinobu_sound_clips:${serverID}`, name)
+    .then(clipID => {
+      if (clipID) {
+        return redis.hdelAsync(`shinobu_sound_clips`, name);
+      } else {
+        return Promise.reject('Clip not in server');
+      }
+    });
+}
+
+
 const createClipObject = function(name, url, submitter) {
 	const redis = this.redis || redis.createClient();
 
@@ -174,6 +188,19 @@ const handleAddMultiple = requirePermission(MANAGE_CLIPS)(function(bot, messageI
   });
 });
 
+const handleRemove = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
+  const { tokens, channelID } = messageInfo;
+  const serverID = bot.serverFromChannelID(channelID);
+
+  const [ name ] = tokens
+
+  if (!name) {
+    return Promise.resolve('noop');
+  }
+  
+  return removeClip.call(bot, name, serverID);
+});
+
 
 const handleList = function(bot, messageInfo) {
   const serverID = bot.serverFromChannelID(messageInfo.channelID);
@@ -196,6 +223,7 @@ const handlers = {
   submit: handleSubmit,
   add: handleAdd,
   addm: handleAddMultiple,
+  remove: handleRemove,
   list: handleList
 };
 
