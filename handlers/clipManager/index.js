@@ -35,6 +35,27 @@ const addClip = function(clipID, serverID, name) {
 };
 
 
+const addMultipleClips = function(bot, clipIDs, serverID) {
+  const redis = bot.redis || redis.createClient();
+
+  const clipPromise = redis.hmgetAsync.apply(redis, ['shinobu_sound_clips'].concat(clipIDs))
+    
+  const savePromise = clipPromise.then(res => {
+      const clipStrings = res.filter(x => x);
+
+      if (!clipStrings.length) {
+        return Promise.reject('No clips added');
+      }
+
+      const clips = clipStrings.map(JSON.parse);
+      const args = clips.map(clip => [clip.name, clip.id]).reduce((a, x) => a.concat(x));
+      return redis.hmsetAsync.apply(redis, [`shinobu_sound_clips:${serverID}`].concat(args));
+    });
+
+  return Promise.all([clipPromise, savePromise]).then(([clips]) => clips);
+}
+
+
 const removeClip = function(name, serverID) {
   const redis = this.redis || redis.createClient();
 
@@ -178,7 +199,7 @@ const handleAddMultiple = requirePermission(MANAGE_CLIPS)(function(bot, messageI
 
   const serverID = bot.serverFromChannelID(channelID);
 
-  return Promise.all(tokens.map(id => addClip.call(bot, id, serverID))).then(clips => {
+  return addMultipleClips(bot, tokens, serverID).then(clips => {
     const clipStrings = clips.map(clip => `${clip.name}(${clip.id})`);
 
     return bot.sendMessage({
