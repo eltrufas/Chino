@@ -14,7 +14,7 @@ const { requirePermission, requirePrefix } = require('../../handler');
 const { REQUIRE_CLIP_APPROVAL, SUBMIT_CLIP, MANAGE_CLIPS, MAX_PENDING_CLIPS } = require('./constants');
 
 
-const addClip = function(clipID, name, serverID) {
+const addClip = function(clipID, serverID, name) {
   const redis = this.redis || redis.createClient();
 
   const clipPromise = redis.hgetAsync('shinobu_sound_clips', clipID)
@@ -147,12 +147,33 @@ const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
 		return;
 	}
 
-  return addClip.call(bot, id, name, bot.serverFromChannelID(messageInfo.channelID))
+  return addClip.call(bot, id, bot.serverFromChannelID(messageInfo.channelID), name)
     .then(clip => bot.sendMessage({
       to: messageInfo.channelID,
       message: `Added clip ${id} under name ${clip.name}`
     }));
 });
+
+
+const handleAddMultiple = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
+  const { tokens, channelID } = messageInfo;
+
+  if (tokens.length < 1) {
+    return;
+  }
+
+  const serverID = bot.serverFromChannelID(channelID);
+
+  return Promise.all(tokens.map(id => addClip.call(bot, id, serverID))).then(clips => {
+    const clipStrings = clips.map(clip => `${clip.name}(${clip.id})`);
+
+    return bot.sendMessage({
+      to: messageInfo.channelID,
+      message: `Added clips: ${clipStrings.join(', ')}`
+    });
+  });
+});
+
 
 const handleList = function(bot, messageInfo) {
   const serverID = bot.serverFromChannelID(messageInfo.channelID);
@@ -172,9 +193,10 @@ const handleList = function(bot, messageInfo) {
 
 
 const handlers = {
-	submit: handleSubmit,
-	add: handleAdd,
-    list: handleList
+  submit: handleSubmit,
+  add: handleAdd,
+  addm: handleAddMultiple,
+  list: handleList
 };
 
 
