@@ -11,7 +11,7 @@ Promise.promisifyAll(redis.Multi.prototype);
 const clipDir = path.resolve(__dirname, '../../content/clips');
 const { requirePermission, requirePrefix } = require('../../handler');
 
-const { REQUIRE_CLIP_APPROVAL, SUBMIT_CLIP, ADD_CLIP, MAX_PENDING_CLIPS } = require('./constants');
+const { REQUIRE_CLIP_APPROVAL, SUBMIT_CLIP, MANAGE_CLIPS, MAX_PENDING_CLIPS } = require('./constants');
 
 
 const addClip = function(clipID, name, serverID) {
@@ -134,7 +134,7 @@ const handleSubmit = requirePermission(SUBMIT_CLIP)(function(bot, messageInfo) {
 });
 
 
-const handleAdd = requirePermission(ADD_CLIP)(function(bot, messageInfo) {
+const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
   const { tokens } = messageInfo;
 
 	if (tokens.length < 1) {
@@ -174,7 +174,7 @@ const handleList = function(bot, messageInfo) {
 const handlers = {
 	submit: handleSubmit,
 	add: handleAdd,
-  list: handleList
+    list: handleList
 };
 
 
