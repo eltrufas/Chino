@@ -13,6 +13,8 @@ const RATING_TAGS = [
   '-rating:safe'
 ];
 
+const tagComplement = tag => tag.startsWith('-') ? tag.substr(1) :`-${string}`
+
 const createLookupHandler = function(sfw, options={}) {
   const defaultRatingTags = sfw ? 'rating:safe' : '-rating:safe';
 
@@ -22,9 +24,9 @@ const createLookupHandler = function(sfw, options={}) {
       ? tags
       : tags.concat([defaultRatingTags]);
 
-
-  const resolveTags = tags =>
-    addRatingTags(tags.filter(Boolean).map(tag => tag.toLowerCase()));
+  const resolveTags = (tags, blockedTags) =>
+    addRatingTags(tags.filter(Boolean).map(tag => tag.toLowerCase()))
+      .concat(blockedTags.map(tagComplement));
 
 
   return function(bot, messageInfo) {
@@ -33,12 +35,13 @@ const createLookupHandler = function(sfw, options={}) {
 
     const tagPromise = bot.redis.smembersAsync(
       `shinobu_blocked_booru_tags:${serverID}`
-    ).then(blockedTags => {
+    )
+    .then(blockedTags => {
       if (userTags.some(tag => blockedTags.indexOf(tag) > -1)) {
         return Promise.reject('Blocked tag detected');
       }
 
-      return resolveTags(userTags);
+      return resolveTags(userTags, blockedTags);
     });
 
     const messagePromise = tagPromise.then(tags =>
@@ -52,7 +55,7 @@ const createLookupHandler = function(sfw, options={}) {
 
     const urlPromise = tagPromise.then(fetcher).then(results => {
       if (results.length === 0) {
-        return Promise.reject('no results found');
+        return Promise.reject('No results found');
       }
 
       return results[Math.floor(Math.random() * results.length)];
@@ -62,14 +65,15 @@ const createLookupHandler = function(sfw, options={}) {
       urlPromise,
       messagePromise,
       tagPromise
-    ]).then(([url, message, tags]) => {
-      return bot.editMessage({
+    ]).then(([url, message, tags]) => 
+      bot.editMessage({
         channelID: messageInfo.channelID,
         messageID: message.id,
         embed: {
           title: 'Waifu lookup',
           description: `**Result found for tags** ${tags.join(', ')}.`,
           color: 0x6DEB60,
+          url,
           image: {
             url
           },
@@ -78,8 +82,8 @@ const createLookupHandler = function(sfw, options={}) {
             url: 'http://gelbooru.com/'
           }
         }
-      });
-    })
+      })
+    )
       
     .catch(reason => {
       if (reason === 'Blocked tag detected') {
@@ -88,10 +92,20 @@ const createLookupHandler = function(sfw, options={}) {
           message: `${mention(messageInfo.userID)} Blocked tag detected`
         });
       } else if (reason === 'No results found') {
-        return bot.sendMessage({
-          to: messageInfo.channelID,
-          message: `${mention(messageInfo.userID)} No results found`
-        });
+        if (!messagePromise.isRejected() && !tagPromise.isRejected()) {
+          return Promise.all([messagePromise, tagPromise])
+          .then(([message, tags]) => 
+            bot.editMessage({
+              channelID: messageInfo.channelID,
+              messageID: message.id,
+              embed: {
+                title: 'Waifu lookup',
+                description: `**No results found for tags** ${tags.join(', ')}.`,
+                color: 0xFF530D
+              }
+            })
+          )
+        }
       } else {
         return Promise.reject(reason);
       }
