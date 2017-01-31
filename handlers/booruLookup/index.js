@@ -13,7 +13,7 @@ const RATING_TAGS = [
   '-rating:safe'
 ];
 
-const tagComplement = tag => tag.startsWith('-') ? tag.substr(1) :`-${string}`
+const tagComplement = tag => tag.startsWith('-') ? tag.substr(1) :`-${tag}`;
 
 const createLookupHandler = function(sfw, options={}) {
   const defaultRatingTags = sfw ? 'rating:safe' : '-rating:safe';
@@ -104,7 +104,7 @@ const createLookupHandler = function(sfw, options={}) {
                 color: 0xFF530D
               }
             })
-          )
+          );
         }
       } else {
         return Promise.reject(reason);
