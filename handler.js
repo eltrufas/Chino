@@ -30,8 +30,9 @@ const requirePrefix = function(prefix, strip=true) {
           });
 
           if (messageInfo.tokens && messageInfo.tokens.length > 0) {
-            newMessageInfo.tokens = [messageInfo.tokens[0].substr(prefix.length)]
-              .concat(messageInfo.tokens.slice(1)).filter(t => t.length);
+            newMessageInfo.tokens = [
+              messageInfo.tokens[0].substr(prefix.length)
+            ].concat(messageInfo.tokens.slice(1)).filter(t => t.length);
           }
 
           return handler(bot, newMessageInfo);

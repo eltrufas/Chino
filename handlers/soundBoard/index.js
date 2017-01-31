@@ -32,32 +32,25 @@ const soundboard = function() {
   const resolveClip = function(bot, clipName, serverID) {
     const { redis } = bot;
 
-    return redis.hgetAsync(`shinobu_sound_clips:${serverID}`, clipName).then(id => {
-      if (!id) {
-        return Promise.reject("clip isn't in server");
-      } else {
-        return redis.hgetAsync(`shinobu_sound_clips`, id);
-      }
-    }).then(value => {
-      if (value) {
-        return JSON.parse(value);
-      } else {
-        return Promise.reject("clip doesn't exist");
-      }
-    });
+    return redis.hgetAsync(
+      `shinobu_sound_clips:${serverID}`,
+      clipName
+    ).then(id => id
+      ? redis.hgetAsync(`shinobu_sound_clips`, id)
+      : Promise.reject("clip isn't in server")
+    ).then(value => value
+      ? JSON.parse(value)
+      : Promise.reject("Clip doesn't exist")
+    );
   };
 
   const playQueue = function(bot, serverID) {
-    pif(shouldPlay(bot, serverID), result => result,
-      () => playNextFile(bot, serverID)
-        .then(stream => {
-          stream.once('done', () => {
-            playQueue(bot, serverID);
-          });
-        }),
-      () => {
-        getServerObject(serverID).playing = false;
-      });
+    shouldPlay(bot, serverID).then(result => result 
+      ? playNextFile(bot, serverID)
+        .then(stream =>
+          stream.once('done', () => playQueue(bot, serverID))
+        )
+      : getServerObject(serverID).playing = false);
   };
 
   const playNextFile = function(bot, serverID) {
@@ -96,15 +89,21 @@ const soundboard = function() {
     
     const serverID = bot.serverFromChannelID(channelID);
 
-    const clipPromise = resolveClip(bot, command, bot.serverFromChannelID(channelID))
-      .then(clip => clip ? Promise.resolve(clip) : Promise.reject('no clipu'));
+    const clipPromise = resolveClip(
+      bot,
+      command,
+      bot.serverFromChannelID(channelID)
+    ).then(clip => clip ? Promise.resolve(clip) : Promise.reject('no clipu'));
 
     const joinPromise = clipPromise
       .then(() => bot.joinVoice(bot.resolveUserVoice(userID, channelID)))
       .then(joined => joined ? clearQueue(bot, serverID) : Promise.resolve());
 
 
-    clipPromise.then(() => bot.deleteMessage({channelID, messageID: rawEvent.d.id}));
+    clipPromise.then(() => bot.deleteMessage({
+      channelID,
+      messageID: rawEvent.d.id
+    }));
 
     return Promise.all([clipPromise, joinPromise]).then(([clip]) => {
         const clipPath = path.resolve(clipDir, clip.filename);

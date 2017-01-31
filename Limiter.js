@@ -10,7 +10,8 @@ class Limiter {
     this.cooling = false;
     this.queue = [];
     this.handleSingle = handleSingle;
-    this.handleQueue = handleQueue || (xs => Promise.all(xs.map(x => handleSingle(x))));
+    this.handleQueue = handleQueue ||
+      (xs => Promise.all(xs.map(x => handleSingle(x))));
   }
 
   handle(message) {
