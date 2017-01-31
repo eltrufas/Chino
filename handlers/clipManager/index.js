@@ -73,10 +73,15 @@ const addMultipleClips = function(bot, clipIDs, serverID) {
 const removeClip = function(name, serverID) {
   const redis = this.redis || redis.createClient();
 
-  return redis.hgetAsync(`shinobu_sound_clips:${serverID}`, name)
-    .then(clipID => clipID
-      ? redis.hdelAsync(`shinobu_sound_clips`, name)
+  const clipPromise = redis.hgetAsync(`shinobu_sound_clips:${serverID}`, name);
+    
+  clipPromise.then(clipID => clipID
+      ? redis.hdelAsync(`shinobu_sound_clips:${serverID}`, name)
       : Promise.reject('Clip not in server'));
+
+  return clipPromise.then(id => ({
+    name, id
+  }));
 };
 
 
@@ -238,11 +243,19 @@ const handleRemove =
 
     const [ name ] = tokens;
 
+    console.log('butts');
+
     if (!name) {
       return Promise.resolve('noop');
     }
+
+    console.log('yey');
     
-    return removeClip.call(bot, name, serverID);
+    return removeClip.call(bot, name, serverID)
+      .then(clip => bot.sendMessage({
+        to: channelID,
+        message: `Removed clip ${clip.name}(${clip.id})`
+      }));
   });
 
 
@@ -277,9 +290,12 @@ const clipManager = requirePrefix('!clip')(function(bot, messageInfo) {
 	const tokens = messageInfo.tokens || messageInfo.message.match(tokenRegex);
 	const [  command, ...rest ] = tokens;
 
+  console.log('hi');
+
 	const newMessageInfo = Object.assign({}, messageInfo, { tokens: rest });
 
 	if (handlers.hasOwnProperty(command)) {
+    console.log(handlers[command]);
 		return handlers[command](bot, newMessageInfo);
 	}
 
