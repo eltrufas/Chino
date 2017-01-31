@@ -1,6 +1,7 @@
 const { createBooruFetcher } = require('./booru');
 const { mention } = require('../../util');
 const { requirePrefix } = require('../../handler');
+const Promise = require('bluebird');
 const shortenUrl = require('./shortenUrl');
 const tokenRegex = /\S+/g;
 
@@ -48,8 +49,7 @@ const createLookupHandler = function(sfw, options={}) {
       bot.sendMessage({
         to: messageInfo.channelID,
         embed: {
-          title: "Waifu lookup",
-          description: `**Searching with tags:** ${tags.join(', ')}.`
+          title: `**Searching with tags:** ${tags.join(', ')}.`
         }
       }));
 
@@ -65,13 +65,13 @@ const createLookupHandler = function(sfw, options={}) {
       urlPromise,
       messagePromise,
       tagPromise
-    ]).then(([url, message, tags]) => 
+    ])
+    .then(([url, message, tags]) => 
       bot.editMessage({
         channelID: messageInfo.channelID,
         messageID: message.id,
         embed: {
-          title: 'Waifu lookup',
-          description: `**Result found for tags** ${tags.join(', ')}.`,
+          title: `**Result found for tags** ${tags.join(', ')}.`,
           color: 0x6DEB60,
           url,
           image: {
@@ -82,8 +82,7 @@ const createLookupHandler = function(sfw, options={}) {
             url: 'http://gelbooru.com/'
           }
         }
-      })
-    )
+      }))
       
     .catch(reason => {
       if (reason === 'Blocked tag detected') {
@@ -99,8 +98,7 @@ const createLookupHandler = function(sfw, options={}) {
               channelID: messageInfo.channelID,
               messageID: message.id,
               embed: {
-                title: 'Waifu lookup',
-                description: `**No results found for tags** ${tags.join(', ')}.`,
+                title: `**No results found for tags** ${tags.join(', ')}.`,
                 color: 0xFF530D
               }
             })
