@@ -77,7 +77,7 @@ const removeClip = function(name, serverID) {
     
   clipPromise.then(clipID => clipID
       ? redis.hdelAsync(`shinobu_sound_clips:${serverID}`, name)
-      : Promise.reject('Clip not in server'));
+      : Promise.resolve('Clip not in server'));
 
   return clipPromise.then(id => ({
     name, id
@@ -212,7 +212,16 @@ const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
     .then(clip => bot.sendMessage({
       to: messageInfo.channelID,
       message: `Added clip ${id} under name ${clip.name}`
-    }));
+    }))
+    .catch(message => {
+      console.log('catch');
+      if (message === 'Clip does not exist') {
+        return bot.sendMessage({
+          to: messageInfo.channelID,
+          message: `Clip with id ${id} doesn't exist`
+        });
+      }
+    });
 });
 
 
@@ -252,10 +261,15 @@ const handleRemove =
     console.log('yey');
     
     return removeClip.call(bot, name, serverID)
-      .then(clip => bot.sendMessage({
-        to: channelID,
-        message: `Removed clip ${clip.name}(${clip.id})`
-      }));
+      .then(clip =>  {
+        const message = clip.id
+          ? `Removed clip ${clip.name}(${clip.id})`
+          : `Can't remove ${name}: clip is not in server`
+        return bot.sendMessage({
+          to: channelID,
+          message
+        });
+      });
   });
 
 
