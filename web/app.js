@@ -66,7 +66,10 @@ app.get('/clip_file/:id', function(req, res) {
 
     const clipObj = JSON.parse(clip);
 
-    res.sendFile(path.resolve(__dirname, `../content/clips/${clipObj.filename}`));
+    res.sendFile(path.resolve(
+      __dirname,
+      `../content/clips/${clipObj.filename}`
+    ));
   });
 });
 

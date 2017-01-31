@@ -53,7 +53,11 @@ const settingsManager = function(bot, {userID, channelID, message, tokens}) {
 
     console.log(editPermission);
 
-    if (editPermission && overridable && validateSettingValue(metadata, value)) {
+    if (
+      editPermission &&
+      overridable && 
+      validateSettingValue(metadata, value)
+    ) {
       return redis.set(valueKey, value);
     } else {
       return Promise.reject('setting cannot be changed');

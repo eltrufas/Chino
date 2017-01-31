@@ -11,7 +11,12 @@ Promise.promisifyAll(redis.Multi.prototype);
 const clipDir = path.resolve(__dirname, '../../content/clips');
 const { requirePermission, requirePrefix } = require('../../handler');
 
-const { REQUIRE_CLIP_APPROVAL, SUBMIT_CLIP, MANAGE_CLIPS, MAX_PENDING_CLIPS } = require('./constants');
+const {
+  REQUIRE_CLIP_APPROVAL,
+  SUBMIT_CLIP,
+  MANAGE_CLIPS,
+  MAX_PENDING_CLIPS
+} = require('./constants');
 
 
 const addClip = function(clipID, serverID, name) {
@@ -38,7 +43,10 @@ const addClip = function(clipID, serverID, name) {
 const addMultipleClips = function(bot, clipIDs, serverID) {
   const redis = bot.redis || redis.createClient();
 
-  const clipPromise = redis.hmgetAsync.apply(redis, ['shinobu_sound_clips'].concat(clipIDs));
+  const clipPromise = redis.hmgetAsync.apply(
+    redis,
+    ['shinobu_sound_clips'].concat(clipIDs)
+  );
     
   const savePromise = clipPromise.then(res => {
       const clipStrings = res.filter(x => x);
@@ -48,8 +56,14 @@ const addMultipleClips = function(bot, clipIDs, serverID) {
       }
 
       const clips = clipStrings.map(JSON.parse);
-      const args = clips.map(clip => [clip.name, clip.id]).reduce((a, x) => a.concat(x));
-      return redis.hmsetAsync.apply(redis, [`shinobu_sound_clips:${serverID}`].concat(args));
+      const args = clips.map(
+        clip => [clip.name, clip.id]).reduce((a, x) => a.concat(x)
+      );
+
+      return redis.hmsetAsync.apply(
+        redis,
+        [`shinobu_sound_clips:${serverID}`].concat(args)
+      );
     });
 
   return Promise.all([clipPromise, savePromise]).then(([clips]) => clips);
@@ -60,13 +74,9 @@ const removeClip = function(name, serverID) {
   const redis = this.redis || redis.createClient();
 
   return redis.hgetAsync(`shinobu_sound_clips:${serverID}`, name)
-    .then(clipID => {
-      if (clipID) {
-        return redis.hdelAsync(`shinobu_sound_clips`, name);
-      } else {
-        return Promise.reject('Clip not in server');
-      }
-    });
+    .then(clipID => clipID
+      ? redis.hdelAsync(`shinobu_sound_clips`, name)
+      : Promise.reject('Clip not in server'));
 };
 
 
@@ -97,14 +107,14 @@ const createClipObject = function(name, url, submitter) {
 
 
 	const requestPromise = filePromise.then(({ ffmpeg }) => 
-      new Promise((resolve, reject) => {
-        request.get(url).pipe(ffmpeg.stdin)
-          .on('error', (error) => {
-            reject(error);
-          });
+    new Promise((resolve, reject) => {
+      request.get(url).pipe(ffmpeg.stdin)
+        .on('error', (error) => {
+          reject(error);
+        });
 
-        ffmpeg.on('exit', resolve);
-      }));
+      ffmpeg.on('exit', resolve);
+    }));
 
 	return Promise.all([
 		idPromise, filePromise, requestPromise
@@ -119,7 +129,8 @@ const submitClip = function(submitter, name, url) {
 
 	const clipPromise = createClipObject.call(this, name, url, submitter);
 
-	clipPromise.then(clip => this.redis.hset(`shinobu_sound_clips`, clip.id, JSON.stringify(clip)));
+	clipPromise.then(clip =>
+    this.redis.hset(`shinobu_sound_clips`, clip.id, JSON.stringify(clip)));
 
 	return clipPromise;		
 };
@@ -137,36 +148,44 @@ const submitClipForApproval = function(submitter, name, url) {
 		} else {
 			return createClipObject.call(this, submitter, name, url);
 		}
-	}).then(clip => this.redis.hset(`shinobu_sound_clips:${submitter}`, clip.id, JSON.stringify(clip)));
+	}).then(clip =>
+    this.redis.hset(
+      `shinobu_sound_clips:${submitter}`,
+      clip.id,
+      JSON.stringify(clip)
+    ));
 };
 
 
-const handleSubmit = requirePermission(SUBMIT_CLIP)(function(bot, messageInfo) {
-	const { tokens } = messageInfo;
+const handleSubmit =
+  requirePermission(SUBMIT_CLIP)(function(bot, messageInfo) {
+    const { tokens } = messageInfo;
 
-	console.log(tokens);
+    console.log(tokens);
 
-	if (tokens.length < 2) {
-		return;
-	}
+    if (tokens.length < 2) {
+      return;
+    }
 
-	const [ name, url ] = tokens;
+    const [ name, url ] = tokens;
 
-	const settingPromise = bot.resolveSetting(messageInfo, REQUIRE_CLIP_APPROVAL);
+    const settingPromise = bot.resolveSetting(
+      messageInfo,
+      REQUIRE_CLIP_APPROVAL
+    );
 
-	const submitPromise = settingPromise.then((required) => (
-		required
-			? submitClipForApproval.call(this, messageInfo.userID, name, url)
-			: submitClip.call(this, messageInfo.userID, name, url)));
+    const submitPromise = settingPromise.then((required) => required
+        ? submitClipForApproval.call(this, messageInfo.userID, name, url)
+        : submitClip.call(this, messageInfo.userID, name, url));
 
-	return Promise.all([settingPromise, submitPromise])
-		.then(([approvalRequired, clip]) => {
-			bot.sendMessage({
-				to: messageInfo.channelID,
-				message: `Submitted clip ${name} with id ${clip.id} ${approvalRequired ? " for approval" : ""}.`
-			});
-		});
-});
+    return Promise.all([settingPromise, submitPromise])
+      .then(([approvalRequired, clip]) => {
+        bot.sendMessage({
+          to: messageInfo.channelID,
+          message: `Submitted clip ${name} with id ${clip.id} ${approvalRequired ? " for approval" : ""}.`
+        });
+      });
+  });
 
 
 const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
@@ -182,7 +201,9 @@ const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
 		return;
 	}
 
-  return addClip.call(bot, id, bot.serverFromChannelID(messageInfo.channelID), name)
+  const serverID = bot.serverFromChannelID(messageInfo.channelID);
+
+  return addClip.call(bot, id, serverID, name)
     .then(clip => bot.sendMessage({
       to: messageInfo.channelID,
       message: `Added clip ${id} under name ${clip.name}`
@@ -190,37 +211,39 @@ const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
 });
 
 
-const handleAddMultiple = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
-  const { tokens, channelID } = messageInfo;
+const handleAddMultiple =
+  requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
+    const { tokens, channelID } = messageInfo;
 
-  if (tokens.length < 1) {
-    return Promise.resolve('noop');
-  }
+    if (tokens.length < 1) {
+      return Promise.resolve('noop');
+    }
 
-  const serverID = bot.serverFromChannelID(channelID);
+    const serverID = bot.serverFromChannelID(channelID);
 
-  return addMultipleClips(bot, tokens, serverID).then(clips => {
-    const clipStrings = clips.map(clip => `${clip.name}(${clip.id})`);
+    return addMultipleClips(bot, tokens, serverID).then(clips => {
+      const clipStrings = clips.map(clip => `${clip.name}(${clip.id})`);
 
-    return bot.sendMessage({
-      to: messageInfo.channelID,
-      message: `Added clips: ${clipStrings.join(', ')}`
+      return bot.sendMessage({
+        to: messageInfo.channelID,
+        message: `Added clips: ${clipStrings.join(', ')}`
+      });
     });
   });
-});
 
-const handleRemove = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
-  const { tokens, channelID } = messageInfo;
-  const serverID = bot.serverFromChannelID(channelID);
+const handleRemove =
+  requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
+    const { tokens, channelID } = messageInfo;
+    const serverID = bot.serverFromChannelID(channelID);
 
-  const [ name ] = tokens;
+    const [ name ] = tokens;
 
-  if (!name) {
-    return Promise.resolve('noop');
-  }
-  
-  return removeClip.call(bot, name, serverID);
-});
+    if (!name) {
+      return Promise.resolve('noop');
+    }
+    
+    return removeClip.call(bot, name, serverID);
+  });
 
 
 const handleList = function(bot, messageInfo) {
@@ -228,7 +251,8 @@ const handleList = function(bot, messageInfo) {
 
   return bot.redis.hgetallAsync(`shinobu_sound_clips:${serverID}`)
     .then(result => {
-      const clipStrings = Object.keys(result).map(name => `${name}(${result[name]})`);
+      const clipStrings = Object.keys(result)
+        .map(name =>`${name}(${result[name]})`);
 
       const message = `**Clips on this server**: ${clipStrings.join(', ')}`;
 

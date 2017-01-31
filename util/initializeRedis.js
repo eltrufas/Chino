@@ -7,11 +7,21 @@ const createInitializer = function(type) {
     objects.forEach(function(obj) {
       const client = redis.createClient();
 
-      client.set(`shinobu_${type}:${obj.name}:meta`, JSON.stringify(obj));
-      client.set(`shinobu_${type}:${obj.name}:global`, JSON.stringify(obj.default_value));
+      client.set(
+        `shinobu_${type}:${obj.name}:meta`,
+        JSON.stringify(obj)
+      );
+
+      client.set(
+        `shinobu_${type}:${obj.name}:global`,
+        JSON.stringify(obj.default_value)
+      );
 
       if (obj.server_owner_default_value !== undefined) {
-        client.set(`shinobu_${type}:${obj.name}:owner`, JSON.stringify(obj.server_owner_default_value));
+        client.set(
+          `shinobu_${type}:${obj.name}:owner`,
+          JSON.stringify(obj.server_owner_default_value)
+        );
       }
 
       client.quit();
@@ -30,7 +40,9 @@ const initializeAll = function() {
       .reduce(function({ settings, permissions }, dir) {
         let newPerms = [];
         try {
-          const newPerms = require(path.resolve(handlerDir, dir, 'permissions'));
+          const newPerms = require(
+            path.resolve(handlerDir, dir, 'permissions')
+          );
           console.log(dir, newPerms);
           permissions = permissions.concat(newPerms);
         } catch(e) {}

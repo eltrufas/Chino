@@ -11,7 +11,14 @@ Promise.promisifyAll(redis.Multi.prototype);
 Promise.promisifyAll(Client.prototype);
 
 const setMappedLimiter = function(options) {
-  const { identifier, getKey, rate, limit, handleSingle, handleQueue } = options;
+  const {
+    identifier,
+    getKey,
+    rate,
+    limit,
+    handleSingle,
+    handleQueue
+  } = options;
 
   const limiters = new Map();
 
@@ -80,7 +87,9 @@ class Chino {
       console.log(this.client.username + ' - (' + this.client.id + ')');
       this.client.editUserInfoAsync({
         username: options.name || 'Shinobu',
-        avatar: readFileSync(path.resolve(__dirname, './content/pic.png'), 'base64'),
+        avatar: readFileSync(
+          path.resolve(__dirname, './content/pic.png'), 'base64'
+        )
       });
     });
 
@@ -105,7 +114,10 @@ class Chino {
     
     let ownerPromise;
 
-    if (serverID !== DIRECT_MESSAGE && client.servers[serverID].owner_id == userID) {
+    if (
+      serverID !== DIRECT_MESSAGE &&
+      client.servers[serverID].owner_id == userID
+    ) {
       ownerPromise = redis.get(`shinobu_perm:${permission}:owner`);
     } else {
       ownerPromise = Promise.resolve(null);
@@ -152,7 +164,8 @@ class Chino {
     }
     const { client } = this;
     const serverID = this.serverFromChannelID(channelID);
-    const currentChannel = client.servers[serverID].members[client.id].voice_channel_id;
+    const currentChannel =
+      client.servers[serverID].members[client.id].voice_channel_id;
 
     if (channelID === currentChannel && client._vChannels[currentChannel]) {
         console.log('already here');
@@ -167,7 +180,9 @@ class Chino {
 
   currentServerVoice(serverID) {
     const { client } = this;
-    const currentChannel = client.servers[serverID].members[client.id].voice_channel_id;
+    const currentChannel = 
+      client.servers[serverID].members[client.id].voice_channel_id;
+
     return currentChannel;
   }
 
@@ -177,7 +192,8 @@ class Chino {
     }
     const { client } = this;
 
-    const currentChannel = client.servers[serverID].members[client.id].voice_channel_id;
+    const currentChannel =
+      client.servers[serverID].members[client.id].voice_channel_id;
 
     return client.leaveVoiceChannelAsync(currentChannel);
   }

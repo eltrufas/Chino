@@ -31,7 +31,9 @@ const createLookupHandler = function(sfw, options={}) {
     const userTags = messageInfo.tokens;
     const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
-    const tagPromise = bot.redis.smembersAsync(`shinobu_blocked_booru_tags:${serverID}`).then(blockedTags => {
+    const tagPromise = bot.redis.smembersAsync(
+      `shinobu_blocked_booru_tags:${serverID}`
+    ).then(blockedTags => {
       if (userTags.some(tag => blockedTags.indexOf(tag) > -1)) {
         return Promise.reject('Blocked tag detected');
       }
@@ -56,7 +58,11 @@ const createLookupHandler = function(sfw, options={}) {
       return results[Math.floor(Math.random() * results.length)];
     }).then(shortenUrl);
 
-    return Promise.all([urlPromise, messagePromise, tagPromise]).then(([url, message, tags]) => {
+    return Promise.all([
+      urlPromise,
+      messagePromise,
+      tagPromise
+    ]).then(([url, message, tags]) => {
       return bot.editMessage({
         channelID: messageInfo.channelID,
         messageID: message.id,
@@ -108,7 +114,11 @@ const booruLookup = requirePrefix('!qt')(function(bot, messageInfo) {
 
     return handlers[command](bot, newMessageInfo);
   } else {
-    const newMessageInfo = Object.assign({}, messageInfo, { tokens: rest.concat([command]) });
+    const newMessageInfo = Object.assign(
+      {},
+      messageInfo,
+      { tokens: rest.concat([command]) }
+    );
     
     return handleLookup(bot, newMessageInfo);
   }
