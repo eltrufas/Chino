@@ -84,6 +84,8 @@ class Chino {
       });
     });
 
+    this.client.on('disconnect', this.client.connect.bind(this.client));
+
     this.client.on('message', (user, userID, channelID, message, rawEvent) => {
       try {
         handler(this, {user, userID, channelID, message, rawEvent});
