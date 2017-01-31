@@ -49,7 +49,8 @@ const createLookupHandler = function(sfw, options={}) {
       bot.sendMessage({
         to: messageInfo.channelID,
         embed: {
-          title: `**Searching with tags:** ${tags.join(', ')}.`
+          title: `**Search for tags:** ${tags.join(', ')}.`,
+          description: 'Searching...'
         }
       }));
 
@@ -71,7 +72,8 @@ const createLookupHandler = function(sfw, options={}) {
         channelID: messageInfo.channelID,
         messageID: message.id,
         embed: {
-          title: `**Result found for tags** ${tags.join(', ')}.`,
+          title: `**Search for tags: ** ${tags.join(', ')}.`,
+          description: 'Result found',
           color: 0x6DEB60,
           url,
           image: {
@@ -98,7 +100,8 @@ const createLookupHandler = function(sfw, options={}) {
               channelID: messageInfo.channelID,
               messageID: message.id,
               embed: {
-                title: `**No results found for tags** ${tags.join(', ')}.`,
+                title: `**Search for tags: ** ${tags.join(', ')}.`,
+                description: 'No results found',
                 color: 0xFF530D
               }
             })
@@ -111,10 +114,48 @@ const createLookupHandler = function(sfw, options={}) {
   };
 };
 
+const handleBlock = function(bot, messageInfo) {
+  const tags = messageInfo.tokens.map(encodeURIComponent);
+
+  if (!tags.length) {
+    return Promise.resolve('noop');
+  }
+
+  const serverID = bot.serverFromChannelID(messageInfo.channelID);
+
+  bot.redis.saddAsync.apply(
+    bot.redis,
+    [`shinobu_blocked_booru_tags:${serverID}`].concat(tags)
+  ).then(() => bot.sendMessage({
+      to: messageInfo.channelID,
+      message: `**Blocked tags: ** ${tags.join(', ')}.`
+    }));
+};
+
+const handleAllow = function(bot, messageInfo) {
+  const tags = messageInfo.tokens.map(encodeURIComponent);
+
+  if (!tags.length) {
+    return Promise.resolve('noop');
+  }
+
+  const serverID = bot.serverFromChannelID(messageInfo.channelID);
+
+  bot.redis.sremAsync.apply(
+    bot.redis,
+    [`shinobu_blocked_booru_tags:${serverID}`].concat(tags)
+  ).then(() => bot.sendMessage({
+      to: messageInfo.channelID,
+      message: `**Allowed tags: ** ${tags.join(', ')}.`
+    }));
+};
+
 const handleLookup = createLookupHandler(true);
 
 const handlers = {
-  nsfw: createLookupHandler(false)
+  nsfw: createLookupHandler(false),
+  block: handleBlock,
+  allow: handleAllow
 };
 
 const booruLookup = requirePrefix('!qt')(function(bot, messageInfo) {
