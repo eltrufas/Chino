@@ -264,7 +264,7 @@ const handleRemove =
       .then(clip =>  {
         const message = clip.id
           ? `Removed clip ${clip.name}(${clip.id})`
-          : `Can't remove ${name}: clip is not in server`
+          : `Can't remove ${name}: clip is not in server`;
         return bot.sendMessage({
           to: channelID,
           message
