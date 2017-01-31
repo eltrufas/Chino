@@ -2,7 +2,7 @@ const tokenRegex = /\S+/g;
 const redis = require('redis');
 const path = require('path');
 const { spawn } = require('child_process');
-var Promise = require('bluebird');
+const Promise = require('bluebird');
 const request = Promise.promisifyAll(require('request'));
 
 Promise.promisifyAll(redis.RedisClient.prototype);
