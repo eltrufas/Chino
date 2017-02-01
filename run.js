@@ -28,6 +28,6 @@ const chino = new Chino(handler, settings);
 
 chino.connect();
 
-app.listen(3000, function() {
+app.listen(settings.web_port, function() {
   console.log('Web thing listening on port 3000');
 });
