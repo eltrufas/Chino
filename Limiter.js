@@ -16,17 +16,21 @@ class Limiter {
 
   handle(message) {
     if (this.cooling || this.sent > this.limit) {
+      const queuePromise = new Promise((resolve, reject) => {
+        this.queue.push({message, resolve, reject});
+      });
+
       if (!this.cooling) {
         this.cooling = true;
         this.startQueue();
       }
 
-      return new Promise((resolve, reject) => {
-        this.queue.push({message, resolve, reject});
-      });
+      return queuePromise;
     } else {
       if (this.sent === 0) {
-        setTimeout(() => this.sent = 0, this.rate);
+        setTimeout(() => {
+          this.sent = 0;
+        }, this.rate);
       }
 
       this.sent++;
