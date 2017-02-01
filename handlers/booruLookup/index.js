@@ -60,7 +60,7 @@ const createLookupHandler = function(sfw, options={}) {
       }
 
       return results[Math.floor(Math.random() * results.length)];
-    }).then(shortenUrl);
+    });
 
     return Promise.all([
       urlPromise,
