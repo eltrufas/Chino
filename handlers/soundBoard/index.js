@@ -1,11 +1,8 @@
 const path = require('path');
 const fs  = require('fs');
 const { requirePermission, requirePrefix, splitCommands } = require('../../handler');
-const { pif } = require('../../util');
 
 const { PLAY_CLIP } = require('./constants');
-
-const tokenRegex = /\S+/g;
 
 const clipDir = path.resolve(__dirname, '../../content/clips');
 

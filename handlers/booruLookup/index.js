@@ -65,9 +65,8 @@ const createLookupHandler = function(sfw, options={}) {
       messagePromise,
       tagPromise
     ])
-    .then(([url, message, tags]) => {
-
-      return bot.editMessage({
+    .then(([url, message, tags]) => 
+      bot.editMessage({
         channelID: messageInfo.channelID,
         messageID: message.id,
         embed: {
@@ -83,7 +82,7 @@ const createLookupHandler = function(sfw, options={}) {
             url: 'http://gelbooru.com/'
           }
         }
-    });})
+    }))
       
     .catch(reason => {
       if (reason === 'Blocked tag detected') {
