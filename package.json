@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.1.4",
+    "axios": "^0.15.3",
     "bluebird": "^3.4.7",
     "discord.io": "github:eltrufas/discord.io",
     "express": "^4.14.1",

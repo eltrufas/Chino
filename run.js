@@ -8,6 +8,8 @@ const soundboard = require('./handlers/soundBoard');
 const clipManager = require('./handlers/clipManager');
 const filterSelf = require('./handlers/filterSelf');
 const booruLookup = require('./handlers/booruLookup');
+const buttLookup = require('./handlers/butts');
+
 
 const app = require('./web/app');
 
@@ -17,7 +19,8 @@ const handler = combineHandlers([
     settingsManager,
     soundboard(),
     clipManager,
-    booruLookup
+    booruLookup,
+    buttLookup
   ])
 ]);
 
