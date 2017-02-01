@@ -10,7 +10,7 @@ Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 Promise.promisifyAll(Client.prototype);
 
-const setMappedLimiter = function(options) {
+const setMappedLimiter = function(obj, options) {
   const {
     identifier,
     getKey,
@@ -22,7 +22,7 @@ const setMappedLimiter = function(options) {
 
   const limiters = new Map();
 
-  this[identifier] = function(message) {
+  obj[identifier] = function(message) {
     const key = getKey(message);
     let limiter = limiters.get(key);
 
@@ -80,7 +80,7 @@ class Chino {
         getKey: message => message.channelID,
         handleSingle: this.client.editMessageAsync.bind(this.client),
       }
-    ].forEach(setMappedLimiter.bind(this));
+    ].forEach(setMappedLimiter.bind(null, this));
 
 
     this.client.on('ready', () => {

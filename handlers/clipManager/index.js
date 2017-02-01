@@ -19,8 +19,8 @@ const {
 } = require('./constants');
 
 
-const addClip = function(clipID, serverID, name) {
-  const redis = this.redis || redis.createClient();
+const addClip = function(bot, clipID, serverID, name) {
+  const redis = bot.redis || redis.createClient();
 
   const clipPromise = redis.hgetAsync('shinobu_sound_clips', clipID)
     .then(JSON.parse);
@@ -70,8 +70,8 @@ const addMultipleClips = function(bot, clipIDs, serverID) {
 };
 
 
-const removeClip = function(name, serverID) {
-  const redis = this.redis || redis.createClient();
+const removeClip = function(bot, name, serverID) {
+  const redis = bot.redis || redis.createClient();
 
   const clipPromise = redis.hgetAsync(`shinobu_sound_clips:${serverID}`, name);
     
@@ -85,8 +85,8 @@ const removeClip = function(name, serverID) {
 };
 
 
-const createClipObject = function(name, url, submitter) {
-	const redis = this.redis || redis.createClient();
+const createClipObject = function(bot, name, url, submitter) {
+	const redis = bot.redis || redis.createClient();
 
 	//const extension = path.extname(url);
 
@@ -129,32 +129,28 @@ const createClipObject = function(name, url, submitter) {
 };
 
 
-const submitClip = function(submitter, name, url) {
-	this.redis = this.redis || redis.createClient();
-
-	const clipPromise = createClipObject.call(this, name, url, submitter);
+const submitClip = function(bot, submitter, name, url) {
+	const clipPromise = createClipObject(bot, name, url, submitter);
 
 	clipPromise.then(clip =>
-    this.redis.hset(`shinobu_sound_clips`, clip.id, JSON.stringify(clip)));
+    bot.redis.hset(`shinobu_sound_clips`, clip.id, JSON.stringify(clip)));
 
 	return clipPromise;		
 };
 
 
-const submitClipForApproval = function(submitter, name, url) {
-	this.redis = this.redis || redis.createClient();
-
+const submitClipForApproval = function(bot, submitter, name, url) {
 	return Promise.all([
-		this.resolveSetting({}, MAX_PENDING_CLIPS),
-		this.redis.hlenAsync(`shinobu_sound_clips:${submitter}`)
+		bot.resolveSetting({}, MAX_PENDING_CLIPS),
+		bot.redis.hlenAsync(`shinobu_sound_clips:${submitter}`)
 	]).then(([maxLen, userLen]) => {
 		if (userLen >= maxLen) {
 			return Promise.reject('queue is full');
 		} else {
-			return createClipObject.call(this, submitter, name, url);
+			return createClipObject(bot, submitter, name, url);
 		}
 	}).then(clip =>
-    this.redis.hset(
+    bot.redis.hset(
       `shinobu_sound_clips:${submitter}`,
       clip.id,
       JSON.stringify(clip)
@@ -180,8 +176,8 @@ const handleSubmit =
     );
 
     const submitPromise = settingPromise.then((required) => required
-        ? submitClipForApproval.call(this, messageInfo.userID, name, url)
-        : submitClip.call(this, messageInfo.userID, name, url));
+        ? submitClipForApproval(bot, messageInfo.userID, name, url)
+        : submitClip(bot, messageInfo.userID, name, url));
 
     return Promise.all([settingPromise, submitPromise])
       .then(([approvalRequired, clip]) => {
@@ -208,7 +204,7 @@ const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
 
   const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
-  return addClip.call(bot, id, serverID, name)
+  return addClip(bot, id, serverID, name)
     .then(clip => bot.sendMessage({
       to: messageInfo.channelID,
       message: `Added clip ${id} under name ${clip.name}`
@@ -236,7 +232,8 @@ const handleAddMultiple =
     const serverID = bot.serverFromChannelID(channelID);
 
     return addMultipleClips(bot, tokens, serverID).then(clips => {
-      const clipStrings = clips.map(clip => `${clip.name}(${clip.id})`);
+      const clipStrings = clips.map(JSON.parse).map(clip => `${clip.name}(${clip.id})`);
+
 
       return bot.sendMessage({
         to: messageInfo.channelID,
@@ -252,15 +249,11 @@ const handleRemove =
 
     const [ name ] = tokens;
 
-    console.log('butts');
-
     if (!name) {
       return Promise.resolve('noop');
-    }
+    }    
 
-    console.log('yey');
-    
-    return removeClip.call(bot, name, serverID)
+    return removeClip(bot, name, serverID)
       .then(clip =>  {
         const message = clip.id
           ? `Removed clip ${clip.name}(${clip.id})`
