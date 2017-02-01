@@ -17,7 +17,7 @@ const handler = combineHandlers([
   (bot, {user, message}) => console.log(`${user}: ${message}`),
   compose(filterSelf, requireMention(), tokenize, combineHandlers)([
     settingsManager,
-    soundboard(),
+    soundboard,
     clipManager,
     booruLookup,
     buttLookup
