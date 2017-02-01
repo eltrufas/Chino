@@ -1,8 +1,7 @@
 const { createBooruFetcher } = require('./booru');
 const { mention } = require('../../util');
-const { requirePrefix } = require('../../handler');
+const { requirePrefix, splitCommands } = require('../../handler');
 const Promise = require('bluebird');
-const tokenRegex = /\S+/g;
 
 const RATING_TAGS = [
   'rating:explicit',
@@ -58,7 +57,7 @@ const createLookupHandler = function(sfw, options={}) {
         return Promise.reject('No results found');
       }
 
-      return results[Math.floor(Math.random() * results.length)];
+      return 'https:' + results[Math.floor(Math.random() * results.length)];
     });
 
     return Promise.all([
@@ -66,8 +65,9 @@ const createLookupHandler = function(sfw, options={}) {
       messagePromise,
       tagPromise
     ])
-    .then(([url, message, tags]) => 
-      bot.editMessage({
+    .then(([url, message, tags]) => {
+
+      return bot.editMessage({
         channelID: messageInfo.channelID,
         messageID: message.id,
         embed: {
@@ -83,7 +83,7 @@ const createLookupHandler = function(sfw, options={}) {
             url: 'http://gelbooru.com/'
           }
         }
-      }))
+    });})
       
     .catch(reason => {
       if (reason === 'Blocked tag detected') {
@@ -157,23 +157,7 @@ const handlers = {
   allow: handleAllow
 };
 
-const booruLookup = requirePrefix('!qt')(function(bot, messageInfo) {
-	const tokens = messageInfo.tokens || messageInfo.message.match(tokenRegex);
-	const [ command, ...rest ] = tokens;
-
-  if (handlers.hasOwnProperty(command)) {
-    const newMessageInfo = Object.assign({}, messageInfo, { tokens: rest });
-
-    return handlers[command](bot, newMessageInfo);
-  } else {
-    const newMessageInfo = Object.assign(
-      {},
-      messageInfo,
-      { tokens: rest.concat([command]) }
-    );
-    
-    return handleLookup(bot, newMessageInfo);
-  }
-});
+const booruLookup =
+  requirePrefix('!qt')(splitCommands(handlers, handleLookup));
 
 module.exports = booruLookup;

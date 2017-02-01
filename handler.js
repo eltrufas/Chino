@@ -2,11 +2,26 @@ const Chino = require('./Chino');
 
 const tokenizerRegex = /\S+/g;
 
+const tokenizeString = s => s.match(tokenizerRegex);
+
 const tokenize = function(handler) {
   return function(bot, messageInfo) {
     const tokens = messageInfo.message.match(tokenizerRegex);
 
     return handler(bot, Object.assign({}, messageInfo, {tokens}));
+  };
+};
+
+
+const tokenizeIfNecessary = function(handler) {
+  return function(bot, messageInfo) {
+    return messageInfo.tokens
+      ? handler(bot, messageInfo)
+      : handler(bot, Object.assign(
+        {},
+        messageInfo,
+        {tokens: tokenizeString(messageInfo.message)}
+      ));
   };
 };
 
@@ -66,13 +81,44 @@ const gateHandler = function(resolver) {
 };
 
 
+const splitCommands = function(commandHandlers, defaultHandler, strip=true) {
+  const handler = function(bot, messageInfo) {
+    const { tokens } = messageInfo;
+    console.log(messageInfo);
+
+    const [ command, ...rest ] = tokens;
+
+
+    if (commandHandlers[command]) {
+      const newMessageInfo = Object.assign(
+        {},
+        messageInfo,
+        {
+          tokens: strip ? rest : tokens
+        }
+      );
+
+      return commandHandlers[command](bot, newMessageInfo);
+    } else if (defaultHandler) {
+      return defaultHandler(bot, messageInfo);
+    } else {
+      return Promise.resolve('noop');
+    }
+  };
+
+  return tokenizeIfNecessary(handler);
+};
+
+
 const requirePermission = gateHandler(Chino.prototype.resolvePermission);
 const requireSetting = gateHandler(Chino.prototype.resolveSetting);
 
 module.exports = {
+  tokenizeIfNecessary,
   combineHandlers,
   tokenize,
   requirePermission,
   requireSetting,
-  requirePrefix
+  requirePrefix,
+  splitCommands
 };

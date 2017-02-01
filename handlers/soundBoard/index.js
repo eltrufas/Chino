@@ -1,6 +1,6 @@
 const path = require('path');
 const fs  = require('fs');
-const { requirePermission, requirePrefix } = require('../../handler');
+const { requirePermission, requirePrefix, splitCommands } = require('../../handler');
 const { pif } = require('../../util');
 
 const { PLAY_CLIP } = require('./constants');
@@ -73,25 +73,26 @@ const soundboard = function() {
     return Promise.resolve(serverObj.queue.length > 0 && !serverObj.playing);
   };
 
-  return requirePrefix('.')(requirePermission(PLAY_CLIP)(function(bot, messageInfo) {
-    const {userID, channelID, message, rawEvent} = messageInfo;
-    const tokens = messageInfo.tokens || message.match(tokenRegex);
-    
-    console.log(tokens);
+  const handleJoin = function(bot, messageInfo) {
+    const { userID, channelID } = messageInfo;
 
-    const command = tokens[0];
+    return bot.joinVoice(bot.resolveUserVoice(userID, channelID));
+  };
 
-    if (command === 'join') {
-      return bot.joinVoice(bot.resolveUserVoice(userID, channelID));
-    } else if (command === 'leave') {
-      return bot.leaveServerVoice(bot.serverFromChannelID(channelID));
-    }
-    
+  const handleLeave = function(bot, messageInfo) {
+    const { channelID } = messageInfo;
+
+    return bot.leaveServerVoice(bot.serverFromChannelID(channelID));
+  };
+
+  const handlePlay = function(bot, messageInfo) {
+    const { channelID, tokens, rawEvent, userID } = messageInfo;
+
     const serverID = bot.serverFromChannelID(channelID);
 
     const clipPromise = resolveClip(
       bot,
-      command,
+      tokens[0],
       bot.serverFromChannelID(channelID)
     ).then(clip => clip ? Promise.resolve(clip) : Promise.reject('no clipu'));
 
@@ -106,11 +107,22 @@ const soundboard = function() {
     }));
 
     return Promise.all([clipPromise, joinPromise]).then(([clip]) => {
-        const clipPath = path.resolve(clipDir, clip.filename);
-        //return bot.redis.lpushAsync(`shinobu_voice_queue:${serverID}`, clipPath);
-        return Promise.resolve(getServerObject(serverID).queue.push(clipPath));
-      }).then(() => playQueue(bot, serverID));
-  }));
+      const clipPath = path.resolve(clipDir, clip.filename);
+
+      return Promise.resolve(getServerObject(serverID).queue.push(clipPath));
+    }).then(() => playQueue(bot, serverID));
+  };
+
+  const handlers = {
+    join: handleJoin,
+    leave: handleLeave
+  };
+
+  return requirePrefix('.')(
+    requirePermission(PLAY_CLIP)(
+      splitCommands(handlers, handlePlay)
+    )
+  );
 };
 
 module.exports = soundboard;
