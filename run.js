@@ -1,5 +1,5 @@
 const Chino = require('./Chino');
-const settings = require('./settings');
+const config = require('./config');
 const { combineHandlers, tokenize } = require('./handler');
 const { compose } = require('./util');
 const requireMention = require('./handlers/requireMention');
@@ -24,10 +24,10 @@ const handler = combineHandlers([
   ])
 ]);
 
-const chino = new Chino(handler, settings);
+const chino = new Chino(handler, config);
 
 chino.connect();
 
-app.listen(settings.web_port, function() {
+app.listen(config.web_port, function() {
   console.log('Web thing listening on port 3000');
 });
