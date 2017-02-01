@@ -2,7 +2,6 @@ const { createBooruFetcher } = require('./booru');
 const { mention } = require('../../util');
 const { requirePrefix } = require('../../handler');
 const Promise = require('bluebird');
-const shortenUrl = require('./shortenUrl');
 const tokenRegex = /\S+/g;
 
 const RATING_TAGS = [
