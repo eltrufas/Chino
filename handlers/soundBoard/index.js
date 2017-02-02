@@ -40,11 +40,24 @@ const resolveClip = function(bot, clipName, serverID) {
   );
 };
 
+const resetTimeout = function(bot, serverID) {
+  const server = getServerObject(serverID);
+  
+  if (server.timeout) {
+    clearTimeout(server.timeout);
+  }
+
+  server.timeout = setTimeout(() => bot.leaveServerVoice(), 60000);
+};
+
 const playQueue = function(bot, serverID) {
   shouldPlay(bot, serverID).then(result => result 
     ? playNextFile(bot, serverID)
       .then(stream =>
-        stream.once('done', () => playQueue(bot, serverID))
+        stream.once('done', () => {
+          resetTimeout(bot, serverID);
+          return playQueue(bot, serverID);
+        })
       )
     : getServerObject(serverID).playing = false);
 };
