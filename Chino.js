@@ -161,7 +161,6 @@ class Chino {
 
   joinVoice(channelID) {
     if (!channelID) {
-      console.log('not in voice channel');
       return Promise.reject('not in voice channel');
     }
     const { client } = this;
@@ -170,11 +169,8 @@ class Chino {
       client.servers[serverID].members[client.id].voice_channel_id;
 
     if (channelID === currentChannel && client._vChannels[currentChannel]) {
-        console.log('already here');
-        return Promise.resolve(false);
+      return Promise.resolve(false);
     } else {
-      console.log('joining');
-
       return client.joinVoiceChannelAsync(channelID)
         .then(() => true);
     }

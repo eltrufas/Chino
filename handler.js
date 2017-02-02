@@ -84,10 +84,7 @@ const gateHandler = function(resolver) {
 const splitCommands = function(commandHandlers, defaultHandler, strip=true) {
   const handler = function(bot, messageInfo) {
     const { tokens } = messageInfo;
-    console.log(messageInfo);
-
     const [ command, ...rest ] = tokens;
-
 
     if (commandHandlers[command]) {
       const newMessageInfo = Object.assign(
