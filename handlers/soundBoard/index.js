@@ -47,7 +47,7 @@ const resetTimeout = function(bot, serverID) {
     clearTimeout(server.timeout);
   }
 
-  server.timeout = setTimeout(() => bot.leaveServerVoice(), 60000);
+  server.timeout = setTimeout(() => bot.leaveServerVoice(serverID), 60000);
 };
 
 const playQueue = function(bot, serverID) {
