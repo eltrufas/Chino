@@ -90,8 +90,11 @@ const handleJoin = function(bot, messageInfo) {
 
 const handleLeave = function(bot, messageInfo) {
   const { channelID } = messageInfo;
+  const serverID = bot.serverFromChannelID(channelID);
 
-  return bot.leaveServerVoice(bot.serverFromChannelID(channelID));
+  clearQueue(serverID)
+
+  return bot.leaveServerVoice(serverID);
 };
 
 const handlePlay = function(bot, messageInfo) {
