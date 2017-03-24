@@ -121,7 +121,7 @@ const handleBlock = function(bot, messageInfo) {
 
   const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
-  bot.redis.saddAsync.apply(
+  return bot.redis.saddAsync.apply(
     bot.redis,
     [`shinobu_blocked_booru_tags:${serverID}`].concat(tags)
   ).then(() => bot.sendMessage({
@@ -139,7 +139,7 @@ const handleAllow = function(bot, messageInfo) {
 
   const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
-  bot.redis.sremAsync.apply(
+  return bot.redis.sremAsync.apply(
     bot.redis,
     [`shinobu_blocked_booru_tags:${serverID}`].concat(tags)
   ).then(() => bot.sendMessage({

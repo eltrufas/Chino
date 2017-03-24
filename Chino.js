@@ -50,10 +50,7 @@ class Chino {
     this.handler = handler;
     this.serverMessageQueue = new Map();
     this.deleteQueue = new Map();
-
-    this.sendLimiters = new Map();
-    this.deleteLimiters = new Map();
-
+    
     [
       {
         identifier: 'sendMessage',
