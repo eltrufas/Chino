@@ -41,8 +41,6 @@ class Chino {
       token: options.token
     });
 
-    //patchClient(this.client);
-
     this.redis = deps.redis || redis.createClient();
 
     this.options = options;
