@@ -153,7 +153,7 @@ const handleSave = function(bot, messageInfo) {
 
   urlPromise.then(() => redis.hdelAsync(`shinobu_booru_save_codes:${channelID}`, id));
 
-  const savePromise = urlPromise.then(url => redis.saddAsync(`shinobu_booru_saved_images:${serverID}`, url))
+  const savePromise = urlPromise.then(url => redis.saddAsync(`shinobu_booru_saved_images:${serverID}`, url))ñ
 
   return Promise.all([
     urlPromise,
