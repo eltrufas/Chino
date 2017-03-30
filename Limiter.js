@@ -15,7 +15,7 @@ class Limiter {
   }
 
   handle(message) {
-    if (this.cooling || this.sent > this.limit) {
+    if (this.cooling || this.sent >= this.limit) {
       const queuePromise = new Promise((resolve, reject) => {
         this.queue.push({message, resolve, reject});
       });
