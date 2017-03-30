@@ -69,6 +69,13 @@ class Chino {
         })
       },
       {
+        identifier: 'addReaction',
+        rate: 1000,
+        limit: 1,
+        handleSingle: this.client.addReactionAsync.bind(this.client),
+        getKey: m => m.channelID
+      },
+      {
         identifier: 'editMessage',
         rate: 5000,
         limit: 4,
@@ -81,7 +88,7 @@ class Chino {
     this.client.on('ready', () => {
       console.log(this.client.username + ' - (' + this.client.id + ')');
       this.client.editUserInfoAsync({
-        username: options.name || 'Shinobu',
+        username: options.name || 'Chino',
         avatar: readFileSync(
           path.resolve(__dirname, './content/pic.png'), 'base64'
         )
