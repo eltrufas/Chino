@@ -1,6 +1,6 @@
 const Chino = require('./Chino');
 
-const tokenizerRegex = /\S+/g;
+const tokenizerRegex = /".*"|\S+/g;
 
 const tokenizeString = s => s.match(tokenizerRegex);
 
