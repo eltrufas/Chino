@@ -1,12 +1,16 @@
 const Chino = require('./Chino');
 
-const tokenizerRegex = /".*"|\S+/g;
+const tokenizerRegex = /(".*"|\S)+/g;
 
-const tokenizeString = s => s.match(tokenizerRegex);
+const tokenizeString = s => s.match(tokenizerRegex)
+    .map(token => token[0] === '"' 
+        ? token.substring(1, token.length - 1)
+        : token
+    );
 
 const tokenize = function(handler) {
   return function(bot, messageInfo) {
-    const tokens = messageInfo.message.match(tokenizerRegex);
+    const tokens = tokenizeString(messageInfo.message);
 
     return handler(bot, Object.assign({}, messageInfo, {tokens}));
   };
