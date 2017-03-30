@@ -109,16 +109,12 @@ class Chino {
         ? client.channels[channelID].guild_id
         : DIRECT_MESSAGE;
     
-    let ownerPromise;
-
-    if (
-      serverID !== DIRECT_MESSAGE &&
+    
+    const ownerPromise = serverID !== DIRECT_MESSAGE &&
       client.servers[serverID].owner_id == userID
-    ) {
-      ownerPromise = redis.get(`shinobu_perm:${permission}:owner`);
-    } else {
-      ownerPromise = Promise.resolve(null);
-    }
+      ? redis.getAsync(`shinobu_perm:${permission}:owner`)
+      : Promise.resolve(null);
+
 
     // rseolve permissions for different scopes. Order matters!
     return Promise.all([
@@ -131,6 +127,7 @@ class Chino {
       const resolvedPerm = permissions.reduce(function(acc, value) {
         return value !== null ? value : acc;
       }, 'false');
+
 
       return JSON.parse(resolvedPerm);
     });
@@ -149,6 +146,7 @@ class Chino {
       const resolvedSetting = settings.reduce(function(acc, value) {
         return value !== null ? value : acc;
       }, false);
+
 
       return JSON.parse(resolvedSetting);
     });

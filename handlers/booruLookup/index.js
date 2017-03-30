@@ -2,7 +2,7 @@ const { createBooruFetcher } = require('./booru');
 const { mention } = require('../../util');
 const { requirePrefix, requirePermission, splitCommands } = require('../../handler');
 const Promise = require('bluebird');
-const { MAX_SAVE_CODE, BOORU_MODIFY_BLOCKED_TAGS, BOORU_SAVE_PICTURE } = require('./constants'); 
+const { MAX_SAVE_CODE, BOORU_MODIFY_BLOCKED_TAGS, BOORU_SAVE_PICTURE, BOORU_LOOKUP } = require('./constants'); 
 
 const RATING_TAGS = [
   'rating:explicit',
@@ -27,8 +27,6 @@ const pushSaveCode = function(bot, channelID, url) {
         : Promise.resolve();
 
       const setPromise = redis.hsetAsync(`shinobu_booru_save_codes:${channelID}`, nextSaveCode, url);
-
-      console.log(maxSaveCode, nextSaveCode);
 
       return Promise.all([setPromise, resetPromise]).then(() => nextSaveCode);
   });
@@ -90,8 +88,6 @@ const createLookupHandler = function(sfw, options={}) {
         channelID: messageInfo.channelID,
         messageID: message.id
       });
-
-      console.log(saveCode);
 
       const sendPromise = bot.sendMessage({
         to: messageInfo.channelID,
@@ -228,11 +224,11 @@ const handleAllow = function(bot, messageInfo) {
   }));
 };
 
-const handleLookup = createLookupHandler(true);
+const handleLookup = requirePermission(BOORU_LOOKUP)(createLookupHandler(true));
 
 const handlers = {
-  nsfw: createLookupHandler(false),
-  saved: handleSaved,
+  nsfw: requirePermission(BOORU_LOOKUP)(createLookupHandler(false)),
+  saved: requirePermission(BOORU_LOOKUP)(handleSaved),
   block: requirePermission(BOORU_MODIFY_BLOCKED_TAGS)(handleBlock),
   allow: requirePermission(BOORU_MODIFY_BLOCKED_TAGS)(handleAllow),
   save: requirePermission(BOORU_SAVE_PICTURE)(handleSave)
