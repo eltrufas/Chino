@@ -9,6 +9,7 @@ const clipManager = require('./handlers/clipManager');
 const filterSelf = require('./handlers/filterSelf');
 const booruLookup = require('./handlers/booruLookup');
 const buttLookup = require('./handlers/butts');
+const regexReaction = require('./handlers/regexReaction');
 
 
 const app = require('./web/app');
@@ -20,8 +21,10 @@ const handler = combineHandlers([
     soundboard,
     clipManager,
     booruLookup,
-    buttLookup
-  ])
+    buttLookup,
+    regexReaction.manager
+  ]),
+  regexReaction.watcher
 ]);
 
 const chino = new Chino(handler, config);
