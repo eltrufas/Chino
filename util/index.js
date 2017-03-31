@@ -15,7 +15,7 @@ function compose(...funcs) {
   }
 
   return funcs.reduce((a, b) => (...args) => {
-    return a(b(...args))
+    return a(b(...args));
   });
 }
 
