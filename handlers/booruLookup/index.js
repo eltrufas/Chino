@@ -180,7 +180,7 @@ const handleSave = function(bot, messageInfo) {
     savePromise
   ]).then(() => bot.sendMessage({
     to: channelID,
-    message: 'Image url saved'
+    message: 'Image url saved. Use `!qt saved` to pull up a random saved picture'
   }));
 };
 
