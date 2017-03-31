@@ -1,39 +1,6 @@
 const redis = require('redis');
 const async = require('async');
 
-const clips = [
-	{
-    "name": "tasukete",
-    "filename": "dareka.mp3",
-    "description": "DAREKA TASUKETE",
-    "submitter": "107008565641748480"
-  },
-  {
-    "name": "nico",
-    "filename": "nico.mp3",
-    "description": "Nico nico ni~",
-    "submitter": "107008565641748480"
-  },
-  {
-    "name": 'kimochi',
-    "filename": "kimochi.mp3",
-    "description": "No lo quite putos",
-    "submitter": "107008565641748480"
-  },
-  {
-    "name": "gomenasai",
-    "filename": "gomenasai.mp3",
-    "description": "Sorry",
-    "submitter": "107008565641748480"
-  },
-  {
-    "name": "suteki",
-    "filename": "suteki.mp3",
-    "description": ":))",
-    "submitter": "107008565641748480"
-  }
-]
-
 const initializeClips = function(clips, callback) {
   const client = redis.createClient();
 
@@ -51,7 +18,7 @@ const initializeClips = function(clips, callback) {
             }
           );
         });
-      }
+      };
     }), function(err, clips) {
       if (callback) {
         callback(err, clips);
@@ -59,6 +26,6 @@ const initializeClips = function(clips, callback) {
       client.quit();
     });
   });
-}
+};
 
 module.exports = initializeClips;
