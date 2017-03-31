@@ -1,4 +1,4 @@
-const { REQUIRE_MENTION } = require('./constants');
+const { REQUIRE_MENTION } = require('./settings');
 const { requireSetting } = require('../../handler');
 
 

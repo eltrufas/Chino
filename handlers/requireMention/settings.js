@@ -1,9 +1,7 @@
-const constants = require('./constants');
-
-module.exports = [
-  {
-    name: constants.REQUIRE_MENTION,
+module.exports = {
+  REQUIRE_MENTION: {
+    name: 'REQUIRE_MENTION',
     default_value: true,
     server_overridable: true
   }
-]
+};

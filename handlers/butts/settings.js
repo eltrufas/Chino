@@ -1,10 +1,8 @@
-const constants = require('./constants');
-
-module.exports = [
-  {
-    name: constants.ALLOW_NSFW_LOOKUP,
+module.exports = {
+  ALLOW_NSFW_LOOKUP: {
+    name: 'ALLOW_NSFW_LOOKUP',
     type: 'boolean',
     default_value: false,
     server_overridable: true
   }
-];
+};

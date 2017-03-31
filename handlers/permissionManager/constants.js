@@ -1,4 +1,0 @@
-module.exports = {
-    SET_GLOBAL_PERM: 'SET_GLOBAL_PERM',
-    SET_SERVER_PERM: 'SET_SERVER_PERM'
-};

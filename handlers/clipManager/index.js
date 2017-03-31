@@ -14,9 +14,10 @@ const { requirePermission, requirePrefix } = require('../../handler');
 const {
   REQUIRE_CLIP_APPROVAL,
   SUBMIT_CLIP,
-  MANAGE_CLIPS,
-  MAX_PENDING_CLIPS
-} = require('./constants');
+  MANAGE_CLIPS
+} = require('./permissions');
+
+const { MAX_PENDING_CLIPS } = require('./settings');
 
 
 const addClip = function(bot, clipID, serverID, name) {

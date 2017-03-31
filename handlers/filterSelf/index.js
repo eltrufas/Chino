@@ -1,4 +1,4 @@
-const { IGNORE_SELF } = require('./constants');
+const { IGNORE_SELF } = require('./settings');
 
 const filterSelf = function(handler){
   return function(bot, messageInfo) {

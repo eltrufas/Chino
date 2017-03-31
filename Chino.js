@@ -112,6 +112,7 @@ class Chino {
 
   resolvePermission({userID, channelID}, permission) {
     const { redis, client } = this;
+    const permID = permission.name;
     const serverID = client.channels[channelID]
         ? client.channels[channelID].guild_id
         : DIRECT_MESSAGE;
@@ -119,17 +120,17 @@ class Chino {
     
     const ownerPromise = serverID !== DIRECT_MESSAGE &&
       client.servers[serverID].owner_id == userID
-      ? redis.getAsync(`shinobu_perm:${permission}:owner`)
+      ? redis.getAsync(`shinobu_perm:${permID}:owner`)
       : Promise.resolve(null);
 
 
     // rseolve permissions for different scopes. Order matters!
     return Promise.all([
-      redis.getAsync(`shinobu_perm:${permission}:global`),
-      redis.getAsync(`shinobu_perm:${permission}:${serverID}`),
-      redis.getAsync(`shinobu_perm:${permission}:${serverID}:${userID}`),
+      redis.getAsync(`shinobu_perm:${permID}:global`),
+      redis.getAsync(`shinobu_perm:${permID}:${serverID}`),
+      redis.getAsync(`shinobu_perm:${permID}:${serverID}:${userID}`),
       ownerPromise,
-      redis.getAsync(`shinobu_perm:${permission}:global:${userID}`),
+      redis.getAsync(`shinobu_perm:${permID}:global:${userID}`),
     ]).then((permissions) => {
       const resolvedPerm = permissions.reduce(function(acc, value) {
         return value !== null ? value : acc;
@@ -141,12 +142,13 @@ class Chino {
 
   resolveSetting({channelID}, setting) {
     const { redis } = this;
+    const settingID = setting.name;
     const serverID = this.serverFromChannelID(channelID);
 
     // resolve settings for different scopes. Order matters!
     return Promise.all([
-      redis.getAsync(`shinobu_setting:${setting}:global`),
-      redis.getAsync(`shinobu_setting:${setting}:${serverID}`),
+      redis.getAsync(`shinobu_setting:${settingID}:global`),
+      redis.getAsync(`shinobu_setting:${settingID}:${serverID}`),
     ])
     .then(function(settings) {
       const resolvedSetting = settings.reduce(function(acc, value) {

@@ -2,7 +2,9 @@ const { createBooruFetcher } = require('./booru');
 const { mention } = require('../../util');
 const { requirePrefix, requirePermission, splitCommands } = require('../../handler');
 const Promise = require('bluebird');
-const { MAX_SAVE_CODE, BOORU_MODIFY_BLOCKED_TAGS, BOORU_SAVE_PICTURE, BOORU_LOOKUP } = require('./constants'); 
+const { MAX_SAVE_CODE } = require('./settings'); 
+const { BOORU_MODIFY_BLOCKED_TAGS, BOORU_SAVE_PICTURE, BOORU_LOOKUP } = require('./permissions'); 
+
 
 const RATING_TAGS = [
   'rating:explicit',

@@ -2,7 +2,7 @@ const path = require('path');
 const fs  = require('fs');
 const { requirePermission, requirePrefix, splitCommands } = require('../../handler');
 
-const { PLAY_CLIP } = require('./constants');
+const { PLAY_CLIP } = require('./permissions');
 
 const clipDir = path.resolve(__dirname, '../../content/clips');
 

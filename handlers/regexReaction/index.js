@@ -1,5 +1,5 @@
 const { requirePrefix, requirePermission, splitCommands } = require('../../handler');
-const { MANAGE_AUTO_REACTIONS } = require('./constants');
+const { MANAGE_AUTO_REACTIONS } = require('./permissions');
 
 const encodeEmoji = function(emoji) {
   if (emoji.length > 2) {

@@ -38,19 +38,22 @@ const initializeAll = function() {
   fs.readdir(handlerDir, function(err, dirs) {
     const { permissions, settings } = dirs
       .reduce(function({ settings, permissions }, dir) {
-        let newPerms = [];
         try {
-          const newPerms = require(
+          const permObj = require(
             path.resolve(handlerDir, dir, 'permissions')
           );
+          const newPerms = Object.keys(permObj)
+            .map(key => permObj[key]);
           console.log(dir, newPerms);
           permissions = permissions.concat(newPerms);
         } catch(e) {}
 
-
-        let newSettings = []
         try {
-          newSettings = require(path.resolve(handlerDir, dir, 'settings'));
+          const settingsObj = require(
+            path.resolve(handlerDir, dir, 'settings')
+          );
+          const newSettings = Object.keys(settingsObj)
+            .map(key => settingsObj[key]);
           console.log(dir, newSettings);
           settings = settings.concat(newSettings);
         } catch(e) {}

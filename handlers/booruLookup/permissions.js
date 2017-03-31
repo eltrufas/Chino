@@ -1,21 +1,20 @@
-const constants = require('./constants');
 
-module.exports = [
-  {
-    name: constants.BOORU_MODIFY_BLOCKED_TAGS,
+module.exports = {
+  BOORU_MODIFY_BLOCKED_TAGS: {
+    name: 'BOORU_MODIFY_BLOCKED_TAGS',
     default_value: false,
     server_owner_default_value: true,
     server_overridable: true
   },
-  {
-    name: constants.BOORU_SAVE_PICTURE,
+  BOORU_SAVE_PICTURE: {
+    name: 'BOORU_SAVE_PICTURE',
     default_value: false,
     server_owner_default_value: true,
     server_overridable: true
   },
-  {
-    name: constants.BOORU_LOOKUP,
+  BOORU_LOOKUP: {
+    name: 'BOORU_LOOKUP',
     default_value: true,
     server_overridable: true
   }
-];
+};
