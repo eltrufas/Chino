@@ -2,7 +2,7 @@ const { createBooruFetcher } = require('./booru');
 const { mention } = require('../../util');
 const { requirePrefix, requirePermission, splitCommands } = require('../../handler');
 const Promise = require('bluebird');
-const { MAX_SAVE_CODE } = require('./settings'); 
+const { BOORU_MAX_SAVE_CODE } = require('./settings'); 
 const { BOORU_MODIFY_BLOCKED_TAGS, BOORU_SAVE_PICTURE, BOORU_LOOKUP } = require('./permissions'); 
 
 
@@ -21,7 +21,7 @@ const pushSaveCode = function(bot, channelID, url) {
   const { redis } = bot;
 
   return Promise.all([
-    bot.resolveSetting({channelID}, MAX_SAVE_CODE),
+    bot.resolveSetting({channelID}, BOORU_MAX_SAVE_CODE),
     redis.hincrbyAsync(`shinobu_booru_next_save_codes`, channelID, 1)
   ]).then(([ maxSaveCode, nextSaveCode ]) => {
       const resetPromise = nextSaveCode === maxSaveCode 

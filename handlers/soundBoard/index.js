@@ -1,6 +1,10 @@
 const path = require('path');
 const fs  = require('fs');
-const { requirePermission, requirePrefix, splitCommands } = require('../../handler');
+const {
+  requirePermission,
+  requirePrefix,
+  splitCommands
+} = require('../../handler');
 
 const { PLAY_CLIP } = require('./permissions');
 
