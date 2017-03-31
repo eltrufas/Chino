@@ -1,4 +1,3 @@
-
 module.exports = {
   BOORU_MODIFY_BLOCKED_TAGS: {
     name: 'BOORU_MODIFY_BLOCKED_TAGS',

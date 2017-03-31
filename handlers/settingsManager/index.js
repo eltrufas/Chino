@@ -18,7 +18,7 @@ const validateSettingValue = function(setting, value) {
   }
 };
 
-const settingsManager = function(bot, {userID, channelID, message, tokens}) {
+const settingsManager = function(bot, { userID, channelID, message, tokens }) {
   tokens = tokens || message.match(tokenRegex);
   if (!tokens || tokens.length < 3 || tokens[0] !== '!set') {
     return Promise.resolve('noop');
@@ -29,7 +29,7 @@ const settingsManager = function(bot, {userID, channelID, message, tokens}) {
   let global, setting, value, valueKey;
   if (tokens[1] === 'global') {
     global = true;
-    [,, setting, value] = tokens;
+    [, , setting, value] = tokens;
     valueKey = `shinobu_setting:${setting}:global`;
   } else {
     global = false;
@@ -41,34 +41,32 @@ const settingsManager = function(bot, {userID, channelID, message, tokens}) {
   const requiredPerm = global ? PERM_EDIT_GLOBAL : PERM_EDIT_SERVER;
 
   return Promise.all([
-    bot.resolvePermission({userID, channelID}, requiredPerm),
+    bot.resolvePermission({ userID, channelID }, requiredPerm),
     redis.getAsync(`shinobu_setting:${setting}:meta`)
   ])
-  .then(function([editPermission, metadata]) {
-    metadata = JSON.parse(metadata);
+    .then(function([editPermission, metadata]) {
+      metadata = JSON.parse(metadata);
 
-    const overridable = global
+      const overridable = global
         ? metadata.global_overridable || false
         : metadata.server_overridable;
 
-    console.log(editPermission);
+      console.log(editPermission);
 
-    if (
-      editPermission &&
-      overridable && 
-      validateSettingValue(metadata, value)
-    ) {
-      return redis.set(valueKey, value);
-    } else {
-      return Promise.reject('setting cannot be changed');
-    }
-  })
-  .then(function() {
-    bot.sendMessage({
-      to: channelID,
-      message: `Setting ${setting} set to ${value} ${global? 'globally' : 'in server'}.`
+      if (
+        editPermission && overridable && validateSettingValue(metadata, value)
+      ) {
+        return redis.set(valueKey, value);
+      } else {
+        return Promise.reject('setting cannot be changed');
+      }
+    })
+    .then(function() {
+      bot.sendMessage({
+        to: channelID,
+        message: `Setting ${setting} set to ${value} ${global ? 'globally' : 'in server'}.`
+      });
     });
-  });
 };
 
 module.exports = settingsManager;

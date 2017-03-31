@@ -1,19 +1,18 @@
 const { REQUIRE_MENTION } = require('./settings');
 const { requireSetting } = require('../../handler');
 
-
-const requireMention = function(trimMessage=true) {
+const requireMention = function(trimMessage = true) {
   return function(handler) {
     const gatedHandler = requireSetting(REQUIRE_MENTION, true)(handler);
 
     return function(bot, messageInfo) {
       const mentionString = `<@${bot.client.id}>`;
-      
+
       // check for mention
       if (messageInfo.message.startsWith(mentionString)) {
         const message = trimMessage
-            ? messageInfo.message.slice(mentionString.length).trim()
-            : messageInfo.message;
+          ? messageInfo.message.slice(mentionString.length).trim()
+          : messageInfo.message;
 
         const newMessageInfo = Object.assign({}, messageInfo, { message });
 

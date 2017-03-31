@@ -1,7 +1,7 @@
 module.exports = {
   REQUIRE_CLIP_APPROVAL: {
     name: 'REQUIRE_CLIP_APPROVAL',
-    default_value: false,
+    default_value: false
   },
   MAX_PENDING_CLIPS: {
     name: 'MAX_PENDING_CLIPS',

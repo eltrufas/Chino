@@ -1,9 +1,7 @@
-
-const identity = (x) => x;
-
+const identity = x => x;
 
 class Limiter {
-  constructor(rate, limit, handleSingle=identity, handleQueue) {
+  constructor(rate, limit, handleSingle = identity, handleQueue) {
     this.rate = rate;
     this.limit = limit;
     this.sent = 0;
@@ -17,7 +15,7 @@ class Limiter {
   handle(message) {
     if (this.cooling || this.sent >= this.limit) {
       const queuePromise = new Promise((resolve, reject) => {
-        this.queue.push({message, resolve, reject});
+        this.queue.push({ message, resolve, reject });
       });
 
       if (!this.cooling) {
@@ -28,9 +26,12 @@ class Limiter {
       return queuePromise;
     } else {
       if (this.sent === 0) {
-        setTimeout(() => {
-          this.sent = 0;
-        }, this.rate);
+        setTimeout(
+          () => {
+            this.sent = 0;
+          },
+          this.rate
+        );
       }
 
       this.sent++;
@@ -40,27 +41,29 @@ class Limiter {
   }
 
   startQueue() {
-    this.interval = setInterval(() => {
-      if (this.queue.length === 0) {
-        this.cooling = false;
-        this.sent = 0;
-        clearInterval(this.interval);
-        return;
-      }
+    this.interval = setInterval(
+      () => {
+        if (this.queue.length === 0) {
+          this.cooling = false;
+          this.sent = 0;
+          clearInterval(this.interval);
+          return;
+        }
 
-      const toClear = this.queue.slice(0, this.limit);
-      this.queue = this.queue.slice(this.limit);
+        const toClear = this.queue.slice(0, this.limit);
+        this.queue = this.queue.slice(this.limit);
 
-      const messages = toClear.map(x => x.message);
-      this.handleQueue(messages)
-        .then(responses => {
+        const messages = toClear.map(x => x.message);
+        this.handleQueue(messages).then(responses => {
           if (Array.isArray(responses)) {
             toClear.forEach((x, i) => x.resolve(responses[i]));
           } else {
             toClear.forEach(x => x.resolve());
           }
         });
-    }, this.rate);
+      },
+      this.rate
+    );
   }
 }
 

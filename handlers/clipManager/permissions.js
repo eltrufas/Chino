@@ -7,6 +7,6 @@ module.exports = {
   },
   SUBMIT_CLIP: {
     name: 'SUBMIT_CLIP',
-    default_value: true,
+    default_value: true
   }
 };

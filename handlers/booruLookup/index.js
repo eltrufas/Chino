@@ -6,13 +6,12 @@ const {
   splitCommands
 } = require('../../handler');
 const Promise = require('bluebird');
-const { BOORU_MAX_SAVE_CODE } = require('./settings'); 
+const { BOORU_MAX_SAVE_CODE } = require('./settings');
 const {
   BOORU_MODIFY_BLOCKED_TAGS,
   BOORU_SAVE_PICTURE,
   BOORU_LOOKUP
 } = require('./permissions');
-
 
 const RATING_TAGS = [
   'rating:explicit',
@@ -23,57 +22,57 @@ const RATING_TAGS = [
   '-rating:safe'
 ];
 
-const tagComplement = tag => tag.startsWith('-') ? tag.substr(1) :`-${tag}`;
+const tagComplement = tag => tag.startsWith('-') ? tag.substr(1) : `-${tag}`;
 
 const pushSaveCode = function(bot, channelID, url) {
   const { redis } = bot;
 
   return Promise.all([
-    bot.resolveSetting({channelID}, BOORU_MAX_SAVE_CODE),
+    bot.resolveSetting({ channelID }, BOORU_MAX_SAVE_CODE),
     redis.hincrbyAsync(`shinobu_booru_next_save_codes`, channelID, 1)
-  ]).then(([ maxSaveCode, nextSaveCode ]) => {
-      const resetPromise = nextSaveCode === maxSaveCode 
-        ? redis.hsetAsync(`shinobu_booru_next_save_codes`, channelID, 0)
-        : Promise.resolve();
+  ]).then(([maxSaveCode, nextSaveCode]) => {
+    const resetPromise = nextSaveCode === maxSaveCode
+      ? redis.hsetAsync(`shinobu_booru_next_save_codes`, channelID, 0)
+      : Promise.resolve();
 
-      const setPromise = redis.hsetAsync(
-        `shinobu_booru_save_codes:${channelID}`,
-        nextSaveCode,
-        url
-      );
+    const setPromise = redis.hsetAsync(
+      `shinobu_booru_save_codes:${channelID}`,
+      nextSaveCode,
+      url
+    );
 
-      return Promise.all([setPromise, resetPromise]).then(() => nextSaveCode);
+    return Promise.all([setPromise, resetPromise]).then(() => nextSaveCode);
   });
 };
 
-const createLookupHandler = function(sfw, options={}) {
+const createLookupHandler = function(sfw, options = {}) {
   const defaultRatingTags = sfw ? 'rating:safe' : '-rating:safe';
 
   const fetcher = createBooruFetcher(options);
 
-  const addRatingTags = tags => tags.some(tag => RATING_TAGS.indexOf(tag) > -1)
+  const addRatingTags = tags =>
+    tags.some(tag => RATING_TAGS.indexOf(tag) > -1)
       ? tags
       : tags.concat([defaultRatingTags]);
 
   const resolveTags = (tags, blockedTags) =>
-    addRatingTags(tags.filter(Boolean).map(tag => tag.toLowerCase()))
-      .concat(blockedTags.map(tagComplement));
-
+    addRatingTags(tags.filter(Boolean).map(tag => tag.toLowerCase())).concat(
+      blockedTags.map(tagComplement)
+    );
 
   return function(bot, messageInfo) {
     const userTags = messageInfo.tokens;
     const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
-    const tagPromise = bot.redis.smembersAsync(
-      `shinobu_blocked_booru_tags:${serverID}`
-    )
-    .then(blockedTags => {
-      if (userTags.some(tag => blockedTags.indexOf(tag) > -1)) {
-        return Promise.reject('Blocked tag detected');
-      }
+    const tagPromise = bot.redis
+      .smembersAsync(`shinobu_blocked_booru_tags:${serverID}`)
+      .then(blockedTags => {
+        if (userTags.some(tag => blockedTags.indexOf(tag) > -1)) {
+          return Promise.reject('Blocked tag detected');
+        }
 
-      return resolveTags(userTags, blockedTags);
-    });
+        return resolveTags(userTags, blockedTags);
+      });
 
     const messagePromise = tagPromise.then(tags =>
       bot.sendMessage({
@@ -98,53 +97,50 @@ const createLookupHandler = function(sfw, options={}) {
       tagPromise,
       saveCodePromise
     ])
-    .then(([url, message, tags, saveCode]) => {
-      const deletePromise = bot.deleteMessage({
-        channelID: messageInfo.channelID,
-        messageID: message.id
-      });
-
-      const sendPromise = bot.sendMessage({
-        to: messageInfo.channelID,
-        message: mention(messageInfo.userID),
-        embed: {
-          title: `**Result found for tags:** ${tags.join(', ')}.`,
-          description: `Send \`!qt save ${saveCode}\` to save this picture.`,
-          color: 0x6DEB60,
-          url,
-          image: {
-            url
-          },
-          provider: {
-            name: 'Gelbooru',
-            url: 'http://gelbooru.com/'
-          }
-        }
-      });
-
-      return Promise.all([deletePromise, sendPromise]);
-    })
-      
-    .catch(reason => {
-      if (reason === 'Blocked tag detected') {
-        return bot.sendMessage({
-          to: messageInfo.channelID,
-          message: `${mention(messageInfo.userID)} Blocked tag detected`
+      .then(([url, message, tags, saveCode]) => {
+        const deletePromise = bot.deleteMessage({
+          channelID: messageInfo.channelID,
+          messageID: message.id
         });
-      } else if (reason === 'No results found') {
-        if (!messagePromise.isRejected() && !tagPromise.isRejected()) {
-          return Promise.all([messagePromise, tagPromise])
-          .then(([, tags]) => 
-            bot.sendMessage({
-              to: messageInfo.channelID,
-              message: `**No results found for tags:** ${tags.join(', ')}.`
-            })
-          );
+
+        const sendPromise = bot.sendMessage({
+          to: messageInfo.channelID,
+          message: mention(messageInfo.userID),
+          embed: {
+            title: `**Result found for tags:** ${tags.join(', ')}.`,
+            description: `Send \`!qt save ${saveCode}\` to save this picture.`,
+            color: 0x6deb60,
+            url,
+            image: {
+              url
+            },
+            provider: {
+              name: 'Gelbooru',
+              url: 'http://gelbooru.com/'
+            }
+          }
+        });
+
+        return Promise.all([deletePromise, sendPromise]);
+      })
+      .catch(reason => {
+        if (reason === 'Blocked tag detected') {
+          return bot.sendMessage({
+            to: messageInfo.channelID,
+            message: `${mention(messageInfo.userID)} Blocked tag detected`
+          });
+        } else if (reason === 'No results found') {
+          if (!messagePromise.isRejected() && !tagPromise.isRejected()) {
+            return Promise.all([messagePromise, tagPromise]).then(([, tags]) =>
+              bot.sendMessage({
+                to: messageInfo.channelID,
+                message: `**No results found for tags:** ${tags.join(', ')}.`
+              }));
+          }
+        } else {
+          return Promise.reject(reason);
         }
-      } else {
-        return Promise.reject(reason);
-      }
-    });
+      });
   };
 };
 
@@ -175,13 +171,11 @@ const handleSave = function(bot, messageInfo) {
   const savePromise = urlPromise.then(url =>
     redis.saddAsync(`shinobu_booru_saved_images:${serverID}`, url));
 
-  return Promise.all([
-    urlPromise,
-    savePromise
-  ]).then(() => bot.sendMessage({
-    to: channelID,
-    message: 'Image url saved. Use `!qt saved` to pull up a random saved picture'
-  }));
+  return Promise.all([urlPromise, savePromise]).then(() =>
+    bot.sendMessage({
+      to: channelID,
+      message: 'Image url saved. Use `!qt saved` to pull up a random saved picture'
+    }));
 };
 
 const handleSaved = function(bot, messageInfo) {
@@ -189,13 +183,15 @@ const handleSaved = function(bot, messageInfo) {
   const { channelID } = messageInfo;
   const serverID = bot.serverFromChannelID(channelID);
 
-  return redis.srandmemberAsync(`shinobu_booru_saved_images:${serverID}`)
-    .then(url => bot.sendMessage({
-      to: channelID,
-      message: mention(messageInfo.userID),
-      embed: {
+  return redis
+    .srandmemberAsync(`shinobu_booru_saved_images:${serverID}`)
+    .then(url =>
+      bot.sendMessage({
+        to: channelID,
+        message: mention(messageInfo.userID),
+        embed: {
           title: `Saved picture`,
-          color: 0x6DEB60,
+          color: 0x6deb60,
           url,
           image: {
             url
@@ -205,7 +201,7 @@ const handleSaved = function(bot, messageInfo) {
             url: 'http://gelbooru.com/'
           }
         }
-    }));
+      }));
 };
 
 const handleBlock = function(bot, messageInfo) {
@@ -217,13 +213,13 @@ const handleBlock = function(bot, messageInfo) {
 
   const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
-  return bot.redis.saddAsync.apply(
-    bot.redis,
-    [`shinobu_blocked_booru_tags:${serverID}`].concat(tags)
-  ).then(() => bot.sendMessage({
-      to: messageInfo.channelID,
-      message: `**Blocked tags:** ${tags.join(', ')}.`
-    }));
+  return bot.redis.saddAsync
+    .apply(bot.redis, [`shinobu_blocked_booru_tags:${serverID}`].concat(tags))
+    .then(() =>
+      bot.sendMessage({
+        to: messageInfo.channelID,
+        message: `**Blocked tags:** ${tags.join(', ')}.`
+      }));
 };
 
 const handleAllow = function(bot, messageInfo) {
@@ -235,17 +231,16 @@ const handleAllow = function(bot, messageInfo) {
 
   const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
-  return bot.redis.sremAsync.apply(
-    bot.redis,
-    [`shinobu_blocked_booru_tags:${serverID}`].concat(tags)
-  ).then(() => bot.sendMessage({
-    to: messageInfo.channelID,
-    message: `**Allowed tags:** ${tags.join(', ')}.`
-  }));
+  return bot.redis.sremAsync
+    .apply(bot.redis, [`shinobu_blocked_booru_tags:${serverID}`].concat(tags))
+    .then(() =>
+      bot.sendMessage({
+        to: messageInfo.channelID,
+        message: `**Allowed tags:** ${tags.join(', ')}.`
+      }));
 };
 
-const handleLookup = 
-  requirePermission(BOORU_LOOKUP)(createLookupHandler(true));
+const handleLookup = requirePermission(BOORU_LOOKUP)(createLookupHandler(true));
 
 const handlers = {
   nsfw: requirePermission(BOORU_LOOKUP)(createLookupHandler(false)),
@@ -255,7 +250,6 @@ const handlers = {
   save: requirePermission(BOORU_SAVE_PICTURE)(handleSave)
 };
 
-const booruLookup =
-  requirePrefix('!qt')(splitCommands(handlers, handleLookup));
+const booruLookup = requirePrefix('!qt')(splitCommands(handlers, handleLookup));
 
 module.exports = booruLookup;

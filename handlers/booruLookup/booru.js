@@ -10,7 +10,6 @@ const DEFAULT_OPTIONS = {
   page_arg: 'pid'
 };
 
-
 const createBooruFetcher = function(options) {
   const fullOptions = Object.assign({}, DEFAULT_OPTIONS, options);
 
@@ -28,7 +27,6 @@ const createBooruFetcher = function(options) {
     key
   } = fullOptions;
 
-
   const getRequestURI = function(tags) {
     let uri = `${base_url}/${endpoint}?${extra_args || ''}limit=${limit}&tags=${tags}&${page_arg}=${page}`;
     if (auth) {
@@ -37,7 +35,6 @@ const createBooruFetcher = function(options) {
 
     return uri;
   };
-
 
   return function(tagArray) {
     const tags = tagArray.map(encodeURIComponent).join('+');
@@ -56,9 +53,11 @@ const createBooruFetcher = function(options) {
           return resolve([]);
         }
 
-        resolve(matches
-          .map(match => match.substring(10, match.length - 1))
-          .map(url => prefix_base ? base_url + url : url));
+        resolve(
+          matches
+            .map(match => match.substring(10, match.length - 1))
+            .map(url => prefix_base ? base_url + url : url)
+        );
       });
     });
   };

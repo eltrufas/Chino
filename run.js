@@ -12,11 +12,10 @@ const buttLookup = require('./handlers/butts');
 const regexReaction = require('./handlers/regexReaction');
 const permissionManager = require('./handlers/permissionManager');
 
-
 const app = require('./web/app');
 
 const handler = combineHandlers([
-  (bot, {user, message}) => console.log(`${user}: ${message}`),
+  (bot, { user, message }) => console.log(`${user}: ${message}`),
   compose(filterSelf, requireMention(), tokenize, combineHandlers)([
     settingsManager,
     soundboard,

@@ -2,33 +2,33 @@ const Chino = require('./Chino');
 
 const tokenizerRegex = /(".*"|\S)+/g;
 
-const tokenizeString = s => s.match(tokenizerRegex)
-    .map(token => token[0] === '"' 
-        ? token.substring(1, token.length - 1)
-        : token
+const tokenizeString = s =>
+  s
+    .match(tokenizerRegex)
+    .map(
+      token => token[0] === '"' ? token.substring(1, token.length - 1) : token
     );
 
 const tokenize = function(handler) {
   return function(bot, messageInfo) {
     const tokens = tokenizeString(messageInfo.message);
 
-    return handler(bot, Object.assign({}, messageInfo, {tokens}));
+    return handler(bot, Object.assign({}, messageInfo, { tokens }));
   };
 };
-
 
 const tokenizeIfNecessary = function(handler) {
   return function(bot, messageInfo) {
     return messageInfo.tokens
       ? handler(bot, messageInfo)
-      : handler(bot, Object.assign(
-        {},
-        messageInfo,
-        {tokens: tokenizeString(messageInfo.message)}
-      ));
+      : handler(
+          bot,
+          Object.assign({}, messageInfo, {
+            tokens: tokenizeString(messageInfo.message)
+          })
+        );
   };
 };
-
 
 const combineHandlers = function(handlers) {
   return function() {
@@ -36,8 +36,7 @@ const combineHandlers = function(handlers) {
   };
 };
 
-
-const requirePrefix = function(prefix, strip=true) {
+const requirePrefix = function(prefix, strip = true) {
   return function(handler) {
     return function(bot, messageInfo) {
       const { message } = messageInfo;
@@ -51,7 +50,9 @@ const requirePrefix = function(prefix, strip=true) {
           if (messageInfo.tokens && messageInfo.tokens.length > 0) {
             newMessageInfo.tokens = [
               messageInfo.tokens[0].substr(prefix.length)
-            ].concat(messageInfo.tokens.slice(1)).filter(t => t.length);
+            ]
+              .concat(messageInfo.tokens.slice(1))
+              .filter(t => t.length);
           }
 
           return handler(bot, newMessageInfo);
@@ -65,39 +66,31 @@ const requirePrefix = function(prefix, strip=true) {
   };
 };
 
-
 const gateHandler = function(resolver) {
-  return function(id, negate=false) {
+  return function(id, negate = false) {
     return function(handler) {
       return function(bot, messageInfo) {
-
-        return resolver.call(bot, messageInfo, id)
-          .then(function(result) {
-            if (negate !== result) {
-              return handler(bot, messageInfo);
-            } else {
-              return Promise.resolve('noop');
-            }
-          });
+        return resolver.call(bot, messageInfo, id).then(function(result) {
+          if (negate !== result) {
+            return handler(bot, messageInfo);
+          } else {
+            return Promise.resolve('noop');
+          }
+        });
       };
     };
   };
 };
 
-
-const splitCommands = function(commandHandlers, defaultHandler, strip=true) {
+const splitCommands = function(commandHandlers, defaultHandler, strip = true) {
   const handler = function(bot, messageInfo) {
     const { tokens } = messageInfo;
-    const [ command, ...rest ] = tokens;
+    const [command, ...rest] = tokens;
 
     if (commandHandlers[command]) {
-      const newMessageInfo = Object.assign(
-        {},
-        messageInfo,
-        {
-          tokens: strip ? rest : tokens
-        }
-      );
+      const newMessageInfo = Object.assign({}, messageInfo, {
+        tokens: strip ? rest : tokens
+      });
 
       return commandHandlers[command](bot, newMessageInfo);
     } else if (defaultHandler) {
@@ -109,7 +102,6 @@ const splitCommands = function(commandHandlers, defaultHandler, strip=true) {
 
   return tokenizeIfNecessary(handler);
 };
-
 
 const requirePermission = gateHandler(Chino.prototype.resolvePermission);
 const requireSetting = gateHandler(Chino.prototype.resolveSetting);

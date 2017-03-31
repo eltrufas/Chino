@@ -1,7 +1,6 @@
-
 function pif(promise, test, consequent, alternate) {
   return promise.then(function(value) {
-    return test(value)? consequent(value) : alternate(value);
+    return test(value) ? consequent(value) : alternate(value);
   });
 }
 
@@ -14,9 +13,10 @@ function compose(...funcs) {
     return funcs[0];
   }
 
-  return funcs.reduce((a, b) => (...args) => {
-    return a(b(...args));
-  });
+  return funcs.reduce((a, b) =>
+    (...args) => {
+      return a(b(...args));
+    });
 }
 
 function identity(a) {
@@ -31,15 +31,15 @@ function unless(promise, test, f) {
   return pif(promise, test, identity, f);
 }
 
-const mention = (id, message) => `<@${id}> ${message || ""}`;
+const mention = (id, message) => `<@${id}> ${message || ''}`;
 
-const codeBlock = (code, as) => `\`\`\`${as || ""}\n ${code}\n\`\`\``;
+const codeBlock = (code, as) => `\`\`\`${as || ''}\n ${code}\n\`\`\``;
 
 module.exports = {
-    pif,
-    when,
-    unless,
-    mention,
-    codeBlock,
-    compose
+  pif,
+  when,
+  unless,
+  mention,
+  codeBlock,
+  compose
 };

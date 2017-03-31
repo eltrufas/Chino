@@ -36,10 +36,11 @@ const setMappedLimiter = function(obj, options) {
 };
 
 class Chino {
-  constructor(handler, options, deps={}) {
-    this.client = deps.client || new Client({
-      token: options.token
-    });
+  constructor(handler, options, deps = {}) {
+    this.client = deps.client ||
+      new Client({
+        token: options.token
+      });
 
     this.redis = deps.redis || redis.createClient();
 
@@ -48,7 +49,7 @@ class Chino {
     this.handler = handler;
     this.serverMessageQueue = new Map();
     this.deleteQueue = new Map();
-    
+
     [
       {
         identifier: 'sendMessage',
@@ -63,10 +64,11 @@ class Chino {
         limit: 4,
         getKey: message => message.channelID,
         handleSingle: this.client.deleteMessageAsync.bind(this.client),
-        handleQueue: (messages) => this.client.deleteMessagesAsync({
-          channelID: messages[0].channelID,
-          messageIDs: messages.map(m => m.messageID)
-        })
+        handleQueue: messages =>
+          this.client.deleteMessagesAsync({
+            channelID: messages[0].channelID,
+            messageIDs: messages.map(m => m.messageID)
+          })
       },
       {
         identifier: 'addReaction',
@@ -80,17 +82,17 @@ class Chino {
         rate: 5000,
         limit: 4,
         getKey: message => message.channelID,
-        handleSingle: this.client.editMessageAsync.bind(this.client),
+        handleSingle: this.client.editMessageAsync.bind(this.client)
       }
     ].forEach(setMappedLimiter.bind(null, this));
-
 
     this.client.on('ready', () => {
       console.log(this.client.username + ' - (' + this.client.id + ')');
       this.client.editUserInfoAsync({
         username: options.name || 'Chino',
         avatar: readFileSync(
-          path.resolve(__dirname, './content/pic.png'), 'base64'
+          path.resolve(__dirname, './content/pic.png'),
+          'base64'
         )
       });
     });
@@ -99,7 +101,7 @@ class Chino {
 
     this.client.on('message', (user, userID, channelID, message, rawEvent) => {
       try {
-        handler(this, {user, userID, channelID, message, rawEvent});
+        handler(this, { user, userID, channelID, message, rawEvent });
       } catch (e) {
         console.error(e);
       }
@@ -110,19 +112,17 @@ class Chino {
     this.client.connect();
   }
 
-  resolvePermission({userID, channelID}, permission) {
+  resolvePermission({ userID, channelID }, permission) {
     const { redis, client } = this;
     const permID = permission.name;
     const serverID = client.channels[channelID]
-        ? client.channels[channelID].guild_id
-        : DIRECT_MESSAGE;
-    
-    
+      ? client.channels[channelID].guild_id
+      : DIRECT_MESSAGE;
+
     const ownerPromise = serverID !== DIRECT_MESSAGE &&
       client.servers[serverID].owner_id == userID
       ? redis.getAsync(`shinobu_perm:${permID}:owner`)
       : Promise.resolve(null);
-
 
     // rseolve permissions for different scopes. Order matters!
     return Promise.all([
@@ -130,17 +130,20 @@ class Chino {
       redis.getAsync(`shinobu_perm:${permID}:${serverID}`),
       redis.getAsync(`shinobu_perm:${permID}:${serverID}:${userID}`),
       ownerPromise,
-      redis.getAsync(`shinobu_perm:${permID}:global:${userID}`),
-    ]).then((permissions) => {
-      const resolvedPerm = permissions.reduce(function(acc, value) {
-        return value !== null ? value : acc;
-      }, 'false');
+      redis.getAsync(`shinobu_perm:${permID}:global:${userID}`)
+    ]).then(permissions => {
+      const resolvedPerm = permissions.reduce(
+        function(acc, value) {
+          return value !== null ? value : acc;
+        },
+        'false'
+      );
 
       return JSON.parse(resolvedPerm);
     });
   }
 
-  resolveSetting({channelID}, setting) {
+  resolveSetting({ channelID }, setting) {
     const { redis } = this;
     const settingID = setting.name;
     const serverID = this.serverFromChannelID(channelID);
@@ -148,13 +151,14 @@ class Chino {
     // resolve settings for different scopes. Order matters!
     return Promise.all([
       redis.getAsync(`shinobu_setting:${settingID}:global`),
-      redis.getAsync(`shinobu_setting:${settingID}:${serverID}`),
-    ])
-    .then(function(settings) {
-      const resolvedSetting = settings.reduce(function(acc, value) {
-        return value !== null ? value : acc;
-      }, false);
-
+      redis.getAsync(`shinobu_setting:${settingID}:${serverID}`)
+    ]).then(function(settings) {
+      const resolvedSetting = settings.reduce(
+        function(acc, value) {
+          return value !== null ? value : acc;
+        },
+        false
+      );
 
       return JSON.parse(resolvedSetting);
     });
@@ -166,21 +170,22 @@ class Chino {
     }
     const { client } = this;
     const serverID = this.serverFromChannelID(channelID);
-    const currentChannel =
-      client.servers[serverID].members[client.id].voice_channel_id;
+    const currentChannel = client.servers[serverID].members[
+      client.id
+    ].voice_channel_id;
 
     if (channelID === currentChannel && client._vChannels[currentChannel]) {
       return Promise.resolve(false);
     } else {
-      return client.joinVoiceChannelAsync(channelID)
-        .then(() => true);
+      return client.joinVoiceChannelAsync(channelID).then(() => true);
     }
   }
 
   currentServerVoice(serverID) {
     const { client } = this;
-    const currentChannel = 
-      client.servers[serverID].members[client.id].voice_channel_id;
+    const currentChannel = client.servers[serverID].members[
+      client.id
+    ].voice_channel_id;
 
     return currentChannel;
   }
@@ -191,8 +196,9 @@ class Chino {
     }
     const { client } = this;
 
-    const currentChannel =
-      client.servers[serverID].members[client.id].voice_channel_id;
+    const currentChannel = client.servers[serverID].members[
+      client.id
+    ].voice_channel_id;
 
     return client.leaveVoiceChannelAsync(currentChannel);
   }
@@ -205,8 +211,8 @@ class Chino {
   serverFromChannelID(channelID) {
     const { client } = this;
     return client.channels[channelID]
-        ? client.channels[channelID].guild_id
-        : DIRECT_MESSAGE;
+      ? client.channels[channelID].guild_id
+      : DIRECT_MESSAGE;
   }
 
   simpleSend(text, channelID) {

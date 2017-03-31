@@ -1,6 +1,6 @@
 const { IGNORE_SELF } = require('./settings');
 
-const filterSelf = function(handler){
+const filterSelf = function(handler) {
   return function(bot, messageInfo) {
     bot.resolveSetting(messageInfo, IGNORE_SELF).then(shouldFilter => {
       if (!shouldFilter || bot.id !== messageInfo.userID) {
