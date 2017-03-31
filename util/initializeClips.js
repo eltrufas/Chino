@@ -37,7 +37,7 @@ const clips = [
 const initializeClips = function(clips, callback) {
   const client = redis.createClient();
 
-  client.set("shinobu_last_clip_id", 0, function(err) {
+  client.set("shinobu_last_clip_id", 0, function() {
     async.parallel(clips.map(function(clip) {
       return function(callback) {
         client.incr("shinobu_last_clip_id", function(err, id) {
@@ -46,7 +46,7 @@ const initializeClips = function(clips, callback) {
             'shinobu_sound_clips',
             id,
             JSON.stringify(value),
-            function(err) {
+            function() {
               callback(null, value);
             }
           );
