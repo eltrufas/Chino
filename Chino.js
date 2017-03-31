@@ -129,12 +129,11 @@ class Chino {
       redis.getAsync(`shinobu_perm:${permission}:${serverID}`),
       redis.getAsync(`shinobu_perm:${permission}:${serverID}:${userID}`),
       ownerPromise,
-      redis.getAsync(`shinobu_perm:${permission}:${userID}`),
+      redis.getAsync(`shinobu_perm:${permission}:global:${userID}`),
     ]).then((permissions) => {
       const resolvedPerm = permissions.reduce(function(acc, value) {
         return value !== null ? value : acc;
       }, 'false');
-
 
       return JSON.parse(resolvedPerm);
     });

@@ -16,7 +16,6 @@ module.exports = [
   {
     name: constants.BOORU_LOOKUP,
     default_value: true,
-    server_owner_default_value: true,
     server_overridable: true
   }
 ];
