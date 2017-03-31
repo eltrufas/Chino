@@ -1,18 +1,25 @@
-const { requirePermission, splitCommands, requirePrefix } = require('../../handler');
+const {
+  requirePermission,
+  splitCommands,
+  requirePrefix
+} = require('../../handler');
 const { SET_GLOBAL_PERM, SET_SERVER_PERM } = require('./permissions');
 
 const validateSnowflake = s => /[0-9]+/.test(s);
 const validatePermValue = s => s === 'true' || s === 'false';
 
-const setGlobalUserPermission = function(redis, perm, userID, value) {
-  return redis.setAsync(`shinobu_perm:${perm}:global:${userID}`, JSON.stringify(value));
+const setGlobalUserPerm = function(redis, perm, userID, value) {
+  return redis.setAsync(
+    `shinobu_perm:${perm}:global:${userID}`,
+    JSON.stringify(value)
+  );
 };
 
-const setGlobalPermission = function(redis, perm, value) {
+const setGlobalPerm = function(redis, perm, value) {
   return redis.setAsync(`shinobu_perm:${perm}:global`, JSON.stringify(value));
 };
 
-const setServerPermission = function(redis, perm, serverID, value) {
+const setServerPerm = function(redis, perm, serverID, value) {
   return redis.getAsync(`shinobu_perm:${perm}:meta`)
     .then(JSON.parse)
     .then(permMeta => permMeta.server_overridable
@@ -23,7 +30,7 @@ const setServerPermission = function(redis, perm, serverID, value) {
       : Promise.reject("Can't override permission per server"));
 };
 
-const setServerUserPermission = function(redis, perm, serverID, userID, value) {
+const setServerUserPerm = function(redis, perm, serverID, userID, value) {
   return redis.getAsync(`shinobu_perm:${perm}:meta`)
     .then(JSON.parse)
     .then(permMeta => permMeta.server_overridable
@@ -42,7 +49,7 @@ const globalHandler = requirePermission(SET_GLOBAL_PERM)(
     if (tokens.length === 2) {
       const [ permission, value ] = tokens;
       if (validatePermValue(value)) {
-        return setGlobalPermission(redis, permission, JSON.parse(value))
+        return setGlobalPerm(redis, permission, JSON.parse(value))
           .then(() => bot.sendMessage({
             to: channelID,
             message: `Permission ${permission} set to ${value} globally.`
@@ -54,8 +61,8 @@ const globalHandler = requirePermission(SET_GLOBAL_PERM)(
       const [ userID, permission, value ] = tokens;
 
       if (validatePermValue(value)) {
-        return setGlobalUserPermission(
-          redis, permission, serverID, JSON.parse(value)
+        return setGlobalUserPerm(
+          redis, permission, userID, JSON.parse(value)
         ).then(() => bot.sendMessage({
             to: channelID,
             message: `Permission ${permission} set to ${value} globally for ${user}.`
@@ -78,7 +85,7 @@ const serverHandler = requirePermission(SET_SERVER_PERM)(
       const [ permission, value ] = tokens;
 
       if (validateSnowflake(channelID) && validatePermValue(value)) {
-        return setServerPermission(
+        return setServerPerm(
           redis,
           permission,
           serverID,
@@ -98,7 +105,7 @@ const serverHandler = requirePermission(SET_SERVER_PERM)(
         validateSnowflake(userID) && 
         validatePermValue(value)
       ) {
-        return setServerUserPermission(
+        return setServerUserPerm(
           redis,
           permission,
           serverID,

@@ -1,4 +1,8 @@
-const { requirePrefix, requirePermission, splitCommands } = require('../../handler');
+const {
+  requirePrefix,
+  requirePermission,
+  splitCommands
+} = require('../../handler');
 const { MANAGE_AUTO_REACTIONS } = require('./permissions');
 
 const encodeEmoji = function(emoji) {
@@ -9,42 +13,46 @@ const encodeEmoji = function(emoji) {
   }
 }
 
-const handleAddReaction = requirePermission(MANAGE_AUTO_REACTIONS)(function(bot, messageInfo) {
-  const { channelID, tokens } = messageInfo;
-  const serverID = bot.serverFromChannelID(channelID);
-  const { redis } = bot;
+const handleAddReaction = requirePermission(MANAGE_AUTO_REACTIONS)(
+  function(bot, messageInfo) {
+    const { channelID, tokens } = messageInfo;
+    const serverID = bot.serverFromChannelID(channelID);
+    const { redis } = bot;
 
-  if (tokens.length != 2) {
-    return Promise.resolve('noop');
-  }
+    if (tokens.length != 2) {
+      return Promise.resolve('noop');
+    }
 
-  const [ emoji, regexString ] = tokens;
+    const [ emoji, regexString ] = tokens;
 
-  const reaction = {
-    emoji: encodeEmoji(emoji),
-    regex: regexString
-  };
+    const reaction = {
+      emoji: encodeEmoji(emoji),
+      regex: regexString
+    };
 
-  return redis.lpushAsync(
-    `shinobu_auto_reacts:${serverID}`,
-    JSON.stringify(reaction)
-  ).then(() => bot.sendMessage({
-    to: channelID,
-    message: 'Added reaction'
-  }));
-});
-
-const handleClearReactions = requirePermission(MANAGE_AUTO_REACTIONS)(function(bot, messageInfo) {
-  const { channelID } = messageInfo;
-  const { redis } = bot;
-  const serverID = bot.serverFromChannelID(channelID);
-
-  redis.delAsync(`shinobu_auto_reacts:${serverID}`)
-    .then(() => bot.sendMessage({
+    return redis.lpushAsync(
+      `shinobu_auto_reacts:${serverID}`,
+      JSON.stringify(reaction)
+    ).then(() => bot.sendMessage({
       to: channelID,
-      message: 'Cleared all reactions'
+      message: 'Added reaction'
     }));
-});
+  }
+);
+
+const handleClearReactions = requirePermission(MANAGE_AUTO_REACTIONS)(
+  function(bot, messageInfo) {
+    const { channelID } = messageInfo;
+    const { redis } = bot;
+    const serverID = bot.serverFromChannelID(channelID);
+
+    redis.delAsync(`shinobu_auto_reacts:${serverID}`)
+      .then(() => bot.sendMessage({
+        to: channelID,
+        message: 'Cleared all reactions'
+      }));
+  }
+);
 
 const safeRegexParse = function(regexString) {
   try {
@@ -82,7 +90,8 @@ const handlers = {
   clear: handleClearReactions
 };
 
-const regexReaction =  requirePrefix('!react')(splitCommands(handlers, handleAddReaction));
+const regexReaction =
+  requirePrefix('!react')(splitCommands(handlers, handleAddReaction));
 
 module.exports = {
     manager: regexReaction,

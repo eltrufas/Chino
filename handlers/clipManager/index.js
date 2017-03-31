@@ -233,7 +233,8 @@ const handleAddMultiple =
     const serverID = bot.serverFromChannelID(channelID);
 
     return addMultipleClips(bot, tokens, serverID).then(clips => {
-      const clipStrings = clips.map(JSON.parse).map(clip => `${clip.name}(${clip.id})`);
+      const clipStrings = clips.map(JSON.parse)
+        .map(clip => `${clip.name}(${clip.id})`);
 
 
       return bot.sendMessage({

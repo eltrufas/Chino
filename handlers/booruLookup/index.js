@@ -1,9 +1,17 @@
 const { createBooruFetcher } = require('./booru');
 const { mention } = require('../../util');
-const { requirePrefix, requirePermission, splitCommands } = require('../../handler');
+const {
+  requirePrefix,
+  requirePermission,
+  splitCommands
+} = require('../../handler');
 const Promise = require('bluebird');
 const { BOORU_MAX_SAVE_CODE } = require('./settings'); 
-const { BOORU_MODIFY_BLOCKED_TAGS, BOORU_SAVE_PICTURE, BOORU_LOOKUP } = require('./permissions'); 
+const {
+  BOORU_MODIFY_BLOCKED_TAGS,
+  BOORU_SAVE_PICTURE,
+  BOORU_LOOKUP
+} = require('./permissions');
 
 
 const RATING_TAGS = [
@@ -28,7 +36,11 @@ const pushSaveCode = function(bot, channelID, url) {
         ? redis.hsetAsync(`shinobu_booru_next_save_codes`, channelID, 0)
         : Promise.resolve();
 
-      const setPromise = redis.hsetAsync(`shinobu_booru_save_codes:${channelID}`, nextSaveCode, url);
+      const setPromise = redis.hsetAsync(
+        `shinobu_booru_save_codes:${channelID}`,
+        nextSaveCode,
+        url
+      );
 
       return Promise.all([setPromise, resetPromise]).then(() => nextSaveCode);
   });
@@ -77,7 +89,8 @@ const createLookupHandler = function(sfw, options={}) {
       return 'https:' + results[Math.floor(Math.random() * results.length)];
     });
 
-    const saveCodePromise = urlPromise.then(url => pushSaveCode(bot, messageInfo.channelID, url));
+    const saveCodePromise = urlPromise.then(url =>
+      pushSaveCode(bot, messageInfo.channelID, url));
 
     return Promise.all([
       urlPromise,
@@ -151,11 +164,16 @@ const handleSave = function(bot, messageInfo) {
   const { redis } = bot;
   const serverID = bot.serverFromChannelID(channelID);
 
-  const urlPromise = redis.hgetAsync(`shinobu_booru_save_codes:${channelID}`, id);
+  const urlPromise = redis.hgetAsync(
+    `shinobu_booru_save_codes:${channelID}`,
+    id
+  );
 
-  urlPromise.then(() => redis.hdelAsync(`shinobu_booru_save_codes:${channelID}`, id));
+  urlPromise.then(() =>
+    redis.hdelAsync(`shinobu_booru_save_codes:${channelID}`, id));
 
-  const savePromise = urlPromise.then(url => redis.saddAsync(`shinobu_booru_saved_images:${serverID}`, url));
+  const savePromise = urlPromise.then(url =>
+    redis.saddAsync(`shinobu_booru_saved_images:${serverID}`, url));
 
   return Promise.all([
     urlPromise,
@@ -226,7 +244,8 @@ const handleAllow = function(bot, messageInfo) {
   }));
 };
 
-const handleLookup = requirePermission(BOORU_LOOKUP)(createLookupHandler(true));
+const handleLookup = 
+  requirePermission(BOORU_LOOKUP)(createLookupHandler(true));
 
 const handlers = {
   nsfw: requirePermission(BOORU_LOOKUP)(createLookupHandler(false)),
