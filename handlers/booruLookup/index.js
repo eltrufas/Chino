@@ -66,13 +66,11 @@ const createLookupHandler = function(sfw, options = {}) {
 
     const tagPromise = bot.redis
       .smembersAsync(`shinobu_blocked_booru_tags:${serverID}`)
-      .then(blockedTags => {
-        if (userTags.some(tag => blockedTags.indexOf(tag) > -1)) {
-          return Promise.reject('Blocked tag detected');
-        }
-
-        return resolveTags(userTags, blockedTags);
-      });
+      .then(blockedTags => 
+        userTags.some(tag => blockedTags.indexOf(tag) > -1)
+          ? Promise.reject('Blocked tag detected')
+          : resolveTags(userTags, blockedTags)
+      );
 
     const messagePromise = tagPromise.then(tags =>
       bot.sendMessage({
@@ -80,13 +78,11 @@ const createLookupHandler = function(sfw, options = {}) {
         message: `**Search for tags:** ${tags.join(', ')}.`
       }));
 
-    const urlPromise = tagPromise.then(fetcher).then(results => {
-      if (results.length === 0) {
-        return Promise.reject('No results found');
-      }
-
-      return 'https:' + results[Math.floor(Math.random() * results.length)];
-    });
+    const urlPromise = tagPromise.then(fetcher).then(results => 
+      results.length === 0
+        ? Promise.reject('No results found')
+        : 'https:' + results[Math.floor(Math.random() * results.length)]
+    );
 
     const saveCodePromise = urlPromise.then(url =>
       pushSaveCode(bot, messageInfo.channelID, url));

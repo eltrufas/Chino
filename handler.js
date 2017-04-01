@@ -70,13 +70,11 @@ const gateHandler = function(resolver) {
   return function(id, negate = false) {
     return function(handler) {
       return function(bot, messageInfo) {
-        return resolver.call(bot, messageInfo, id).then(function(result) {
-          if (negate !== result) {
-            return handler(bot, messageInfo);
-          } else {
-            return Promise.resolve('noop');
-          }
-        });
+        return resolver.call(bot, messageInfo, id).then(result =>
+          negate !== result
+            ? handler(bot, messageInfo)
+            : Promise.resolve('noop')
+        );
       };
     };
   };
