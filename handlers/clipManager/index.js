@@ -1,15 +1,19 @@
-const tokenRegex = /\S+/g;
 const redis = require('redis');
 const path = require('path');
 const { spawn } = require('child_process');
 const Promise = require('bluebird');
 const request = Promise.promisifyAll(require('request'));
+const {
+  requirePermission,
+  requirePrefix,
+  splitCommands
+} = require('../../handler');
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
 const clipDir = path.resolve(__dirname, '../../content/clips');
-const { requirePermission, requirePrefix } = require('../../handler');
+
 
 const {
   REQUIRE_CLIP_APPROVAL,
@@ -302,20 +306,6 @@ const handlers = {
   list: handleList
 };
 
-const clipManager = requirePrefix('!clip')(function(bot, messageInfo) {
-  const tokens = messageInfo.tokens || messageInfo.message.match(tokenRegex);
-  const [command, ...rest] = tokens;
-
-  console.log('hi');
-
-  const newMessageInfo = Object.assign({}, messageInfo, { tokens: rest });
-
-  if (handlers.hasOwnProperty(command)) {
-    console.log(handlers[command]);
-    return handlers[command](bot, newMessageInfo);
-  }
-
-  return Promise.resolve('noop');
-});
+const clipManager = requirePrefix('!cllip')(splitCommands(handlers));
 
 module.exports = clipManager;
