@@ -2,13 +2,11 @@ const { IGNORE_SELF } = require('./settings');
 
 const filterSelf = function(handler) {
   return function(bot, messageInfo) {
-    bot.resolveSetting(messageInfo, IGNORE_SELF).then(shouldFilter => {
-      if (!shouldFilter || bot.id !== messageInfo.userID) {
-        return handler(bot, messageInfo);
-      } else {
-        return Promise.resolve('noop');
-      }
-    });
+    bot.resolveSetting(messageInfo, IGNORE_SELF).then(shouldFilter => 
+      !shouldFilter || bot.id !== messageInfo.userID
+        ? handler(bot, messageInfo)
+        : Promise.resolve('noop')
+    );
   };
 };
 

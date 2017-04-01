@@ -5,30 +5,18 @@ const {
 } = require('../../handler');
 const { MANAGE_AUTO_REACTIONS } = require('./permissions');
 
-const encodeEmoji = function(emoji) {
-  if (emoji.length > 2) {
-    return encodeURIComponent(emoji.substring(2, emoji.length - 1));
-  } else {
-    return encodeURIComponent(emoji);
-  }
-};
+const encodeEmoji = emoji => 
+  emoji.length > 2
+    ? encodeURIComponent(emoji.substring(2, emoji.length - 1))
+    : encodeURIComponent(emoji);
 
-const handleAddReaction = requirePermission(
-  MANAGE_AUTO_REACTIONS
-)(function(bot, messageInfo) {
-  const { channelID, tokens } = messageInfo;
+const addReaction = function(bot, channelID, emoji, regex) {
   const serverID = bot.serverFromChannelID(channelID);
   const { redis } = bot;
 
-  if (tokens.length != 2) {
-    return Promise.resolve('noop');
-  }
-
-  const [emoji, regexString] = tokens;
-
   const reaction = {
     emoji: encodeEmoji(emoji),
-    regex: regexString
+    regex
   };
 
   return redis
@@ -38,6 +26,16 @@ const handleAddReaction = requirePermission(
         to: channelID,
         message: 'Added reaction'
       }));
+};
+
+const handleAddReaction = requirePermission(
+  MANAGE_AUTO_REACTIONS
+)(function(bot, messageInfo) {
+  const { channelID, tokens } = messageInfo;
+
+  return tokens.length == 2
+    ? addReaction(bot, channelID, tokens[0], tokens[1])
+    : Promise.resolve('noop');
 });
 
 const handleClearReactions = requirePermission(
@@ -78,13 +76,10 @@ const checkReaction = function(bot, messageInfo) {
           emoji: reaction.emoji
         }))
         .reduce(
-          (acc, reaction) => {
-            if (reaction.regex && reaction.regex.test(message)) {
-              return acc.concat([reaction.emoji]);
-            } else {
-              return acc;
-            }
-          },
+          (acc, reaction) => 
+            reaction.regex && reaction.regex.test(message)
+              ? acc.concat([reaction.emoji])
+              : acc,
           []
         )
         .map(emoji =>

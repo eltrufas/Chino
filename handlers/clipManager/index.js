@@ -153,13 +153,11 @@ const submitClipForApproval = function(bot, submitter, name, url) {
     bot.resolveSetting({}, MAX_PENDING_CLIPS),
     bot.redis.hlenAsync(`shinobu_sound_clips:${submitter}`)
   ])
-    .then(([maxLen, userLen]) => {
-      if (userLen >= maxLen) {
-        return Promise.reject('queue is full');
-      } else {
-        return createClipObject(bot, submitter, name, url);
-      }
-    })
+    .then(([maxLen, userLen]) => 
+     userLen >= maxLen
+      ? Promise.reject('queue is full')
+      : createClipObject(bot, submitter, name, url)
+    )
     .then(clip =>
       bot.redis.hset(
         `shinobu_sound_clips:${submitter}`,
@@ -174,7 +172,7 @@ const handleSubmit = requirePermission(SUBMIT_CLIP)(function(bot, messageInfo) {
   console.log(tokens);
 
   if (tokens.length < 2) {
-    return;
+    return Promise.resolve('noop');
   }
 
   const [name, url] = tokens;
