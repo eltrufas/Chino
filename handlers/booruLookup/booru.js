@@ -1,4 +1,4 @@
-const request = require('request');
+const axios = require('axios');
 
 const DEFAULT_OPTIONS = {
   limit: 100,
@@ -41,25 +41,16 @@ const createBooruFetcher = function(options) {
 
     const uri = getRequestURI(tags);
 
-    return new Promise((resolve, reject) => {
-      request(uri, (err, res, body) => {
-        if (err) {
-          return reject(err);
-        }
+    return axios.get(uri)
+      .then(({ data }) => {
+        const matches = data.match(regex);
 
-        const matches = body.match(regex);
-
-        if (!matches) {
-          return resolve([]);
-        }
-
-        resolve(
-          matches
-            .map(match => match.substring(10, match.length - 1))
-            .map(url => prefix_base ? base_url + url : url)
-        );
+        return matches
+          ? matches
+              .map(match => match.substring(10, match.length - 1))
+              .map(url => prefix_base ? base_url + url : url)
+          : Promise.resolve([]);
       });
-    });
   };
 };
 
