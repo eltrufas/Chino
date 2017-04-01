@@ -30,8 +30,8 @@ const addReaction = function(bot, channelID, emoji, regex) {
 
 const handleAddReaction = requirePermission(
   MANAGE_AUTO_REACTIONS
-)(function(bot, messageInfo) {
-  const { channelID, tokens } = messageInfo;
+)(function(bot, messageInfo, tokens) {
+  const { channelID } = messageInfo;
 
   return tokens.length == 2
     ? addReaction(bot, channelID, tokens[0], tokens[1])

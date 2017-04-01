@@ -51,9 +51,9 @@ const setServerUserPerm = function(redis, perm, serverID, userID, value) {
 
 const globalHandler = requirePermission(
   SET_GLOBAL_PERM
-)(function(bot, messageInfo) {
+)(function(bot, messageInfo, tokens) {
   const { redis } = bot;
-  const { channelID, tokens, user } = messageInfo;
+  const { channelID, user } = messageInfo;
 
   if (tokens.length === 2) {
     const [permission, value] = tokens;
@@ -88,9 +88,9 @@ const globalHandler = requirePermission(
 
 const serverHandler = requirePermission(
   SET_SERVER_PERM
-)(function(bot, messageInfo) {
+)(function(bot, messageInfo, tokens) {
   const { redis } = bot;
-  const { channelID, tokens, user } = messageInfo;
+  const { channelID, user } = messageInfo;
   const serverID = bot.serverFromChannelID(channelID);
 
   if (tokens.length === 2) {

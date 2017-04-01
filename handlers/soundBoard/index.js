@@ -103,8 +103,8 @@ const handleLeave = function(bot, messageInfo) {
   return bot.leaveServerVoice(serverID);
 };
 
-const handlePlay = function(bot, messageInfo) {
-  const { channelID, tokens, rawEvent, userID } = messageInfo;
+const handlePlay = function(bot, messageInfo, tokens) {
+  const { channelID, rawEvent, userID } = messageInfo;
 
   const serverID = bot.serverFromChannelID(channelID);
 

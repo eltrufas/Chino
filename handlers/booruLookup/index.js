@@ -60,8 +60,9 @@ const createLookupHandler = function(sfw, options = {}) {
       blockedTags.map(tagComplement)
     );
 
-  return function(bot, messageInfo) {
-    const userTags = messageInfo.tokens;
+  return function(bot, messageInfo, tokens) {
+    console.log(tokens);
+    const userTags = tokens;
     const serverID = bot.serverFromChannelID(messageInfo.channelID);
 
     const tagPromise = bot.redis
@@ -140,8 +141,8 @@ const createLookupHandler = function(sfw, options = {}) {
   };
 };
 
-const handleSave = function(bot, messageInfo) {
-  const { tokens, channelID } = messageInfo;
+const handleSave = function(bot, messageInfo, tokens) {
+  const { channelID } = messageInfo;
 
   if (tokens.length != 1) {
     return Promise.resolve(false);
@@ -200,8 +201,8 @@ const handleSaved = function(bot, messageInfo) {
       }));
 };
 
-const handleBlock = function(bot, messageInfo) {
-  const tags = messageInfo.tokens.map(encodeURIComponent);
+const handleBlock = function(bot, messageInfo, tokens) {
+  const tags = tokens.map(encodeURIComponent);
 
   if (!tags.length) {
     return Promise.resolve('noop');
@@ -218,8 +219,8 @@ const handleBlock = function(bot, messageInfo) {
       }));
 };
 
-const handleAllow = function(bot, messageInfo) {
-  const tags = messageInfo.tokens.map(encodeURIComponent);
+const handleAllow = function(bot, messageInfo, tokens) {
+  const tags = tokens.map(encodeURIComponent);
 
   if (!tags.length) {
     return Promise.resolve('noop');

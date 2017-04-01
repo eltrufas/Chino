@@ -18,7 +18,7 @@ const validateSettingValue = function(setting, value) {
   }
 };
 
-const settingsManager = function(bot, { userID, channelID, message, tokens }) {
+const settingsManager = function(bot, { userID, channelID, message }, tokens) {
   tokens = tokens || message.match(tokenRegex);
   if (!tokens || tokens.length < 3 || tokens[0] !== '!set') {
     return Promise.resolve('noop');

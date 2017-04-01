@@ -95,15 +95,11 @@ const createClipObject = function(bot, name, url, submitter) {
 
   //const extension = path.extname(url);
 
-  console.log(name, url, submitter);
-
   const idPromise = redis.incrAsync('shinobu_last_clip_id');
 
   const filePromise = idPromise.then(id => {
     const filename = `${id}.ogg`;
     //const file = fs.createWriteStream(path.join(clipDir, filename));
-
-    console.log(path.join(clipDir, filename));
 
     const ffmpeg = spawn(
       'ffmpeg',
@@ -170,10 +166,7 @@ const submitClipForApproval = function(bot, submitter, name, url) {
       ));
 };
 
-const handleSubmit = requirePermission(SUBMIT_CLIP)(function(bot, messageInfo) {
-  const { tokens } = messageInfo;
-
-  console.log(tokens);
+const handleSubmit = requirePermission(SUBMIT_CLIP)(function(bot, messageInfo, tokens) {
 
   if (tokens.length < 2) {
     return Promise.resolve('noop');
@@ -201,9 +194,7 @@ const handleSubmit = requirePermission(SUBMIT_CLIP)(function(bot, messageInfo) {
   });
 });
 
-const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
-  const { tokens } = messageInfo;
-
+const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo, tokens) {
   if (tokens.length < 1) {
     return Promise.resolve('noop');
   }
@@ -223,7 +214,6 @@ const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
         message: `Added clip ${id} under name ${clip.name}`
       }))
     .catch(message => {
-      console.log('catch');
       if (message === 'Clip does not exist') {
         return bot.sendMessage({
           to: messageInfo.channelID,
@@ -235,8 +225,8 @@ const handleAdd = requirePermission(MANAGE_CLIPS)(function(bot, messageInfo) {
 
 const handleAddMultiple = requirePermission(
   MANAGE_CLIPS
-)(function(bot, messageInfo) {
-  const { tokens, channelID } = messageInfo;
+)(function(bot, messageInfo, tokens) {
+  const { channelID } = messageInfo;
 
   if (tokens.length < 1) {
     return Promise.resolve('noop');
@@ -258,8 +248,8 @@ const handleAddMultiple = requirePermission(
 
 const handleRemove = requirePermission(
   MANAGE_CLIPS
-)(function(bot, messageInfo) {
-  const { tokens, channelID } = messageInfo;
+)(function(bot, messageInfo, tokens) {
+  const { channelID } = messageInfo;
   const serverID = bot.serverFromChannelID(channelID);
 
   const [name] = tokens;
@@ -306,6 +296,6 @@ const handlers = {
   list: handleList
 };
 
-const clipManager = requirePrefix('!cllip')(splitCommands(handlers));
+const clipManager = requirePrefix('!clip')(splitCommands(handlers));
 
 module.exports = clipManager;
