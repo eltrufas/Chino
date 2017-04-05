@@ -9,6 +9,8 @@ const clipManager = require('./handlers/clipManager');
 const filterSelf = require('./handlers/filterSelf');
 const booruLookup = require('./handlers/booruLookup');
 const buttLookup = require('./handlers/butts');
+const catLookup = require('./handlers/cats');
+
 const regexReaction = require('./handlers/regexReaction');
 const permissionManager = require('./handlers/permissionManager');
 
@@ -23,7 +25,8 @@ const handler = combineHandlers([
     booruLookup,
     buttLookup,
     regexReaction.manager,
-    permissionManager
+    permissionManager,
+    catLookup
   ]),
   regexReaction.watcher
 ]);
