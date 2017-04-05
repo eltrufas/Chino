@@ -10,6 +10,8 @@ const filterSelf = require('./handlers/filterSelf');
 const booruLookup = require('./handlers/booruLookup');
 const buttLookup = require('./handlers/butts');
 const catLookup = require('./handlers/cats');
+const dogLookup = require('./handlers/dogs');
+
 
 const regexReaction = require('./handlers/regexReaction');
 const permissionManager = require('./handlers/permissionManager');
@@ -26,7 +28,8 @@ const handler = combineHandlers([
     buttLookup,
     regexReaction.manager,
     permissionManager,
-    catLookup
+    catLookup,
+    dogLookup
   ]),
   regexReaction.watcher
 ]);
