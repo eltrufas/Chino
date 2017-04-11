@@ -1,18 +1,19 @@
 {
-  "name": "shino-butt",
+  "name": "chino",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "A discord bot based on discord.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eltrufas/Chino.git"
   },
-  "author": "",
-  "license": "ISC",
+  "main": "run.js",
+  "author": "trufas",
+  "license": "MIT",
   "dependencies": {
     "async": "^2.1.4",
     "axios": "^0.15.3",
     "bluebird": "^3.4.7",
-    "discord.io": "github:eltrufas/discord.io",
+    "discord.io": "izy521/discord.io",
     "express": "^4.14.1",
     "redis": "^2.6.3",
     "request": "^2.81.0"
