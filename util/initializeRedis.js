@@ -31,38 +31,40 @@ const initializeSettings = createInitializer('setting');
 const initializePermissions = createInitializer('perm');
 
 const initializeAll = function() {
-  const handlerDir = path.resolve(__dirname, '../handlers');
-  fs.readdir(handlerDir, function(err, dirs) {
-    const { permissions, settings } = dirs.reduce(
-      function({ settings, permissions }, dir) {
-        try {
-          const permObj = require(path.resolve(handlerDir, dir, 'permissions'));
-          const newPerms = Object.keys(permObj).map(key => permObj[key]);
-          console.log(dir, newPerms);
-          permissions = permissions.concat(newPerms);
-        } catch (e) {}
+  const permDir = path.resolve(__dirname, '../permissions');
 
-        try {
-          const settingsObj = require(path.resolve(
-            handlerDir,
-            dir,
-            'settings'
-          ));
-          const newSettings = Object.keys(settingsObj).map(
-            key => settingsObj[key]
-          );
-          console.log(dir, newSettings);
-          settings = settings.concat(newSettings);
-        } catch (e) {}
+  fs.readdir(permDir, (err, filenames) => {
+    const perms = filenames.reduce((permissions, filename) => {
+      try {
+        const permObj = require(path.resolve(permDir, filename));
+        const newPerms = Object.keys(permObj).map(key => permObj[key]);
+        return permissions.concat(newPerms);
+      } catch(e) {
+        return permissions;
+      }
+    }, []);
 
-        return { settings, permissions };
-      },
-      { permissions: [], settings: [] }
-    );
+    initializePermissions(perms);
 
-    console.log(permissions, settings);
-    initializePermissions(permissions);
-    initializeSettings(settings);
+  });
+
+  const settingDir = path.resolve(__dirname, '../settings');
+  fs.readdir(settingDir, (err, filenames) => {
+    const sets = filenames.reduce((settings, filename) => {
+      try {
+        const settingObj = require(path.resolve(__dirname, '../settings', filename));
+        const newSettings = Object.keys(settingObj).map(key => settingObj[key]);
+        return settings.concat(newSettings);
+      } catch(e) {
+        return settings;
+      }
+    }, []);
+
+    console.log(sets);
+
+    initializeSettings(sets);
+
+    const settingDir = path.resolve(__dirname, '../settings');
   });
 };
 

@@ -1,6 +1,6 @@
 const tokenRegex = /\S+/g;
 
-const { PERM_EDIT_GLOBAL, PERM_EDIT_SERVER } = require('./permissions');
+const { PERM_EDIT_GLOBAL, PERM_EDIT_SERVER } = require('../permissions/settingsManager');
 
 const validateSettingValue = function(setting, value) {
   const type = setting.type || 'boolean';

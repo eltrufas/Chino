@@ -1,6 +1,6 @@
 const axios = require('axios');
-const { requirePermission, requirePrefix } = require('../../handler');
-const { CAT_LOOKUP } = require('./permissions');
+const { requirePermission, requirePrefix } = require('../handler');
+const { CAT_LOOKUP } = require('../permissions/cats');
 
 const cats = requirePrefix('!cat')(
   requirePermission(CAT_LOOKUP)((bot, messageInfo) => 

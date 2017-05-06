@@ -1,5 +1,5 @@
-const { REQUIRE_MENTION } = require('./settings');
-const { requireSetting } = require('../../handler');
+const { REQUIRE_MENTION } = require('../settings/requireMention');
+const { requireSetting } = require('../handler');
 
 const requireMention = function(trimMessage = true) {
   return function(handler) {

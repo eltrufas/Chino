@@ -4,11 +4,11 @@ const {
   requirePermission,
   requirePrefix,
   splitCommands
-} = require('../../handler');
+} = require('../handler');
 
-const { PLAY_CLIP } = require('./permissions');
+const { PLAY_CLIP } = require('../permissions/soundboard');
 
-const clipDir = path.resolve(__dirname, '../../content/clips');
+const clipDir = path.resolve(__dirname, '../content/clips');
 
 const servers = new Map();
 

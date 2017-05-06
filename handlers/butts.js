@@ -1,6 +1,6 @@
 const axios = require('axios');
-const { requireSetting, requirePrefix } = require('../../handler');
-const { ALLOW_NSFW_LOOKUP } = require('./settings');
+const { requireSetting, requirePrefix } = require('../handler');
+const { ALLOW_NSFW_LOOKUP } = require('../settings/butts');
 
 const butts = requirePrefix('!butts')(
   requireSetting(ALLOW_NSFW_LOOKUP)((bot, messageInfo) => 

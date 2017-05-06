@@ -6,12 +6,12 @@ const {
   splitCommands
 } = require('../../handler');
 const Promise = require('bluebird');
-const { BOORU_MAX_SAVE_CODE } = require('./settings');
+const { BOORU_MAX_SAVE_CODE } = require('../../settings/booruLookup');
 const {
   BOORU_MODIFY_BLOCKED_TAGS,
   BOORU_SAVE_PICTURE,
   BOORU_LOOKUP
-} = require('./permissions');
+} = require('../../permissions/booruLookup');
 
 const RATING_TAGS = [
   'rating:explicit',

@@ -7,22 +7,18 @@ const {
   requirePermission,
   requirePrefix,
   splitCommands
-} = require('../../handler');
+} = require('../handler');
 const {
   SUBMIT_CLIP,
   MANAGE_CLIPS
-} = require('./permissions');
-const { REQUIRE_CLIP_APPROVAL } = require('./settings');
+} = require('../permissions/clipManager');
+const { REQUIRE_CLIP_APPROVAL, MAX_PENDING_CLIPS } = require('../settings/clipManager');
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
 const clipDir = path.resolve(__dirname, '../../content/clips');
 
-
-
-
-const { MAX_PENDING_CLIPS } = require('./settings');
 
 const addClip = function(bot, clipID, serverID, name) {
   const redis = bot.redis || redis.createClient();

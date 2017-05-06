@@ -2,8 +2,8 @@ const {
   requirePermission,
   splitCommands,
   requirePrefix
-} = require('../../handler');
-const { SET_GLOBAL_PERM, SET_SERVER_PERM } = require('./permissions');
+} = require('../handler');
+const { SET_GLOBAL_PERM, SET_SERVER_PERM } = require('../permissions/permissionManager');
 
 const validateSnowflake = s => /[0-9]+/.test(s);
 const validatePermValue = s => s === 'true' || s === 'false';
