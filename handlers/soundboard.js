@@ -52,7 +52,7 @@ const resetTimeout = function(bot, serverID) {
     clearTimeout(server.timeout);
   }
 
-  server.timeout = setTimeout(() => bot.leaveServerVoice(serverID), 60000);
+  server.timeout = setTimeout(() => leaveVoiceChannel(bot, serverID), 60000);
 };
 
 const playQueue = function(bot, serverID) {
@@ -88,6 +88,12 @@ const shouldPlay = function(bot, serverID) {
   return Promise.resolve(serverObj.queue.length > 0 && !serverObj.playing);
 };
 
+const leaveVoiceChannel = function(bot, serverID) => {
+  clearQueue(serverID);
+
+  return bot.leaveServerVoice(serverID);
+}
+
 const handleJoin = function(bot, messageInfo) {
   const { userID, channelID } = messageInfo;
 
@@ -98,9 +104,7 @@ const handleLeave = function(bot, messageInfo) {
   const { channelID } = messageInfo;
   const serverID = bot.serverFromChannelID(channelID);
 
-  clearQueue(serverID);
-
-  return bot.leaveServerVoice(serverID);
+  return leaveVoiceChannel(bot, serverID);
 };
 
 const handlePlay = function(bot, messageInfo, tokens) {
