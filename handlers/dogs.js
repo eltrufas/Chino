@@ -5,11 +5,8 @@ const { DOG_LOOKUP } = require('../permissions/dogs');
 const dogs = requirePrefix('!dog')(
   requirePermission(DOG_LOOKUP)((bot, messageInfo) => 
     axios
-      .get('http://random.dog/')
-      .then(({ data }) => {
-        console.log(data);
-        return 'http://random.dog/' + data.match(/src='([^']+)'/)[1];
-      })
+      .get('https://random.dog/woof.json')
+      .then(({ data }) => data.url)
       .then(dogUrl =>
         bot.sendMessage({
           to: messageInfo.channelID,
