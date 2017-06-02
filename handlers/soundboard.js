@@ -88,7 +88,7 @@ const shouldPlay = function(bot, serverID) {
   return Promise.resolve(serverObj.queue.length > 0 && !serverObj.playing);
 };
 
-const leaveVoiceChannel = function(bot, serverID) => {
+const leaveVoiceChannel = function(bot, serverID) {
   clearQueue(serverID);
 
   return bot.leaveServerVoice(serverID);
