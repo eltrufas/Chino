@@ -17,7 +17,7 @@ const { REQUIRE_CLIP_APPROVAL, MAX_PENDING_CLIPS } = require('../settings/clipMa
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
-const clipDir = path.resolve(__dirname, '../../content/clips');
+const clipDir = path.resolve(__dirname, '../content/clips');
 
 
 const addClip = function(bot, clipID, serverID, name) {
@@ -98,6 +98,8 @@ const createClipObject = function(bot, name, url, submitter) {
     const filename = `${id}.ogg`;
     //const file = fs.createWriteStream(path.join(clipDir, filename));
 
+    console.log(path.join(clipDir, filename));
+
     const ffmpeg = spawn(
       'ffmpeg',
       [
@@ -150,7 +152,7 @@ const submitClipForApproval = function(bot, submitter, name, url) {
     bot.resolveSetting({}, MAX_PENDING_CLIPS),
     bot.redis.hlenAsync(`shinobu_sound_clips:${submitter}`)
   ])
-    .then(([maxLen, userLen]) => 
+    .then(([maxLen, userLen]) =>
      userLen >= maxLen
       ? Promise.reject('queue is full')
       : createClipObject(bot, submitter, name, url)
