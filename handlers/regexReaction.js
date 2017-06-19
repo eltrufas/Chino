@@ -5,7 +5,7 @@ const {
 } = require('../handler');
 const { MANAGE_AUTO_REACTIONS } = require('../permissions/regexReaction');
 
-const encodeEmoji = emoji => 
+const encodeEmoji = emoji =>
   emoji.length > 2
     ? encodeURIComponent(emoji.substring(2, emoji.length - 1))
     : encodeURIComponent(emoji);
@@ -54,10 +54,10 @@ const handleClearReactions = requirePermission(
 
 const safeRegexParse = function(regexString) {
   try {
-    const re = RegExp(regexString);
+    const re = RegExp(regexString, 'i');
     return re;
   } catch (e) {
-    return null;
+    return RegExp('🅱^');
   }
 };
 
@@ -76,7 +76,7 @@ const checkReaction = function(bot, messageInfo) {
           emoji: reaction.emoji
         }))
         .reduce(
-          (acc, reaction) => 
+          (acc, reaction) =>
             reaction.regex && reaction.regex.test(message)
               ? acc.concat([reaction.emoji])
               : acc,

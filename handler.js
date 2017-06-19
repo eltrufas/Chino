@@ -85,8 +85,6 @@ const splitCommands = function(commandHandlers, defaultHandler, strip = true) {
     const [command, ...rest] = tokens;
 
     if (commandHandlers[command]) {
-      
-     
       const newMessageInfo = Object.assign({}, messageInfo, {
         message: messageInfo.message.substr(command.length)
       });
