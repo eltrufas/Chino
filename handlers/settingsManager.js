@@ -45,6 +45,7 @@ const settingsManager = function(bot, { userID, channelID, message }, tokens) {
     redis.getAsync(`shinobu_setting:${setting}:meta`)
   ])
     .then(function([editPermission, metadata]) {
+      console.log(`shinobu_setting:${setting}:meta`);
       metadata = JSON.parse(metadata);
 
       const overridable = global

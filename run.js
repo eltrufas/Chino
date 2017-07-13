@@ -11,6 +11,8 @@ const booruLookup = require('./handlers/booruLookup');
 const buttLookup = require('./handlers/butts');
 const catLookup = require('./handlers/cats');
 const dogLookup = require('./handlers/dogs');
+const poptepipic = require('./handlers/poptepipic');
+
 
 
 const regexReaction = require('./handlers/regexReaction');
@@ -29,7 +31,8 @@ const handler = combineHandlers([
     regexReaction.manager,
     permissionManager,
     catLookup,
-    dogLookup
+    dogLookup,
+    poptepipic
   ]),
   regexReaction.watcher
 ]);
