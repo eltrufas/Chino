@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.1.4",
-    "axios": "^0.15.3",
+    "axios": "^0.18.1",
     "bluebird": "^3.4.7",
     "discord.io": "izy521/discord.io",
     "express": "^4.14.1",
