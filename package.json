@@ -15,7 +15,7 @@
     "bluebird": "^3.4.7",
     "discord.io": "izy521/discord.io",
     "express": "^4.14.1",
-    "redis": "^2.6.3",
+    "redis": "^3.1.1",
     "request": "^2.81.0"
   }
 }
