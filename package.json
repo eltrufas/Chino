@@ -10,7 +10,7 @@
   "author": "trufas",
   "license": "MIT",
   "dependencies": {
-    "async": "^2.1.4",
+    "async": "^3.2.2",
     "axios": "^0.18.1",
     "bluebird": "^3.4.7",
     "discord.io": "izy521/discord.io",
